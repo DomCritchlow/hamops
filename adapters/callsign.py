@@ -3,8 +3,6 @@ import httpx
 from typing import Optional, Any
 from hamops.schemas import CallsignRecord
 
-
-
 def _to_float(x: Any):
     try:
         return float(x)
@@ -40,16 +38,14 @@ async def lookup_callsign(callsign: str) -> Optional[CallsignRecord]:
     if isinstance(cs, dict) and cs:
         return CallsignRecord(
             callsign=cs.get("call", callsign.upper()),
-            name=cs.get("name") or cs.get("fname"),
+            name=cs.get("fname") + " " + cs.get("name") if cs.get("fname") else None,
             license_class=cs.get("class"),
             status=cs.get("status"),
             country=cs.get("country"),
             grid=cs.get("grid") or cs.get("gridsquare"),
             lat=_to_float(cs.get("lat")),
             lon=_to_float(cs.get("lon")),
-            expires=cs.get("expires"),
-            first_issued=cs.get("first"),
-            trustee=cs.get("trustee"),
+            expires=cs.get("expires")
         )
 
     # If there is no callsign object, optionally check messages for NOT_FOUND—but safely.

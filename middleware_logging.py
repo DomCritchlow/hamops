@@ -16,7 +16,6 @@ def _redact_headers(headers: dict) -> dict:
     return redacted
 
 class RequestLogMiddleware(BaseHTTPMiddleware):
-    """Logs method, path, query, limited body, status, and duration (ms)."""
 
     def __init__(self, app, max_body=2048):
         super().__init__(app)
