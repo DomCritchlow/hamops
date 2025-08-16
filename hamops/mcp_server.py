@@ -1,12 +1,12 @@
 from fastmcp import FastMCP
 from hamops.adapters.callsign import lookup_callsign
 
-# Create FastMCP instance (no stateless_http parameter needed)
 mcp = FastMCP("HAM Ops")
 
-@mcp.tool
+
+@mcp.tool()
 async def callsign_lookup(callsign: str) -> str:
-    """Look up a ham radio callsign. Returns operator information."""
+    """Look up a ham callsign. Returns coarse info (no full address)."""
     rec = await lookup_callsign(callsign)
     if rec:
         parts = []
@@ -29,5 +29,3 @@ async def callsign_lookup(callsign: str) -> str:
         
         return " | ".join(parts) if parts else "Callsign found but no details available"
     return f"Callsign {callsign} not found in database"
-
-# Remove the generic search/fetch tools if not using them

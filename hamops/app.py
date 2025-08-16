@@ -1,4 +1,4 @@
-import os
+import os, json
 from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
@@ -10,19 +10,19 @@ from hamops.adapters.callsign import lookup_callsign
 
 API_KEY = os.getenv("API_KEY")
 
-# Create the MCP HTTP app first
+# CRITICAL: Create the MCP HTTP app first
 mcp_app = mcp.http_app(path="/mcp")
 
-# Create FastAPI app with MCP's lifespan
+# CRITICAL: Use MCP's lifespan when creating FastAPI app
 app = FastAPI(
     title="HAM Ops",
-    lifespan=mcp_app.lifespan  # Important: Use MCP's lifespan
+    lifespan=mcp_app.lifespan  # This is what's missing!
 )
 
-# Add CORS middleware for Claude web interface
+# Add CORS middleware for Claude
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, be more specific
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,7 +36,7 @@ def require_api_key(x_api_key: str | None = Header(default=None)):
     if API_KEY and x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Missing or invalid API key")
     
-# --- Browser endpoints ---
+# --- Handy browser targets ---
 @app.get("/")
 def root():
     return {
@@ -44,7 +44,7 @@ def root():
         "service": "HAM Ops", 
         "docs": "/docs", 
         "health": "/health",
-        "mcp": "/mcp"  # Add MCP endpoint to discovery
+        "mcp": "/mcp"  # Let users know about MCP endpoint
     }
 
 @app.get("/health")
@@ -58,6 +58,5 @@ async def rest_callsign(callsign: str, _=Depends(require_api_key)):
         raise HTTPException(status_code=404, detail="Callsign not found")
     return JSONResponse({"record": rec.model_dump()})
 
-# --- Mount MCP server ---
-# Mount the MCP HTTP app
+# Mount MCP app
 app.mount("/mcp", mcp_app)
