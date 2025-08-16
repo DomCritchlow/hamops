@@ -5,19 +5,20 @@ from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 
 from hamops.middleware_logging import RequestLogMiddleware
-from hamops.mcp_server import mcp 
+#from hamops.mcp_server import mcp 
 from hamops.adapters.callsign import lookup_callsign
+
+from fastapi_mcp import FastApiMCP
 
 API_KEY = os.getenv("API_KEY")
 
 # CRITICAL: Create the MCP HTTP app first
-mcp_app = mcp.http_app(path="/mcp")
+
 
 # CRITICAL: Use MCP's lifespan when creating FastAPI app
-app = FastAPI(
-    title="HAM Ops",
-    lifespan=mcp_app.lifespan  # This is what's missing!
-)
+app = FastAPI(title="Hamops")
+
+
 
 # Add CORS middleware for Claude
 app.add_middleware(
@@ -51,7 +52,7 @@ def root():
 def health():
     return {"ok": True}
 
-@app.get("/api/callsign/{callsign}")
+@app.get("/api/callsign/{callsign}", operation_id="callsign_lookup")
 async def rest_callsign(callsign: str, _=Depends(require_api_key)):
     rec = await lookup_callsign(callsign)
     if not rec:
@@ -59,4 +60,5 @@ async def rest_callsign(callsign: str, _=Depends(require_api_key)):
     return JSONResponse({"record": rec.model_dump()})
 
 # Mount MCP app
-app.mount("/mcp", mcp_app)
+mcp = FastApiMCP(app, include_operations=['callsign_lookup'])
+mcp.mount()
