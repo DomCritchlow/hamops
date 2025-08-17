@@ -7,10 +7,23 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+
 # ---------------------------------------------------------------------------
 # Logger
 # ---------------------------------------------------------------------------
 LOG = logging.getLogger("hamops")
+
+def log_info(event: str, **kwargs):
+    log = {"level": "info", "event": event, **kwargs}
+    LOG.info(json.dumps(log, default=str))
+
+def log_warning(event: str, **kwargs):
+    log = {"level": "warning", "event": event, **kwargs}
+    LOG.warning(json.dumps(log, default=str))
+
+def log_error(event: str, **kwargs):
+    log = {"level": "error", "event": event, **kwargs}
+    LOG.error(json.dumps(log, default=str))
 
 
 # ---------------------------------------------------------------------------
@@ -58,17 +71,16 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         dur_ms = int((time.time() - start) * 1000)
-        log = {
-            "event": "http_request",
-            "request_id": rid,
-            "method": request.method,
-            "path": request.url.path,
-            "query": dict(request.query_params),
-            "headers": _redact_headers(dict(request.headers)),
-            "body_preview": body_preview,
-            "status": response.status_code,
-            "duration_ms": dur_ms,
-        }
-        LOG.info(json.dumps(log, default=str))
+        log_info(
+            "http_request",
+            request_id=rid,
+            method=request.method,
+            path=request.url.path,
+            query=dict(request.query_params),
+            headers=_redact_headers(dict(request.headers)),
+            body_preview=body_preview,
+            status=response.status_code,
+            duration_ms=dur_ms,
+        )
         response.headers["x-request-id"] = rid
         return response
