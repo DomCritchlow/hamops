@@ -10,11 +10,11 @@
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <style>
     :root {
-      --bg: #f8f8fb;
+      --bg: #ead1bf;
       --card: #ffffff;
       --fg: #1b1b1f;
       --muted: #5f5f62;
-      --accent: #635bff;
+      --accent: #5b4636;
     }
     * { box-sizing: border-box; }
     body {
@@ -40,38 +40,50 @@
       text-decoration: none;
       color: var(--fg);
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
+    nav img { width: 20px; height: 20px; }
     main { flex: 1; max-width: 960px; margin: 0 auto; padding: 2rem; }
     .hero { text-align: center; padding: 3rem 1rem; }
     .hero-title { font-size: 2.5rem; margin: 0 0 1rem; }
     .hero-subtitle { color: var(--muted); font-size: 1.2rem; margin: 0 0 2rem; }
-    .cta {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
     .intro { max-width: 720px; margin: 0 auto; text-align: center; line-height: 1.5; }
-    .feature-grid {
+    section h2 { text-align: center; margin-top: 3rem; }
+    .tool-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
       margin-top: 2rem;
     }
-    #features > h2 { text-align: center; margin-top: 3rem; }
-    .feature {
+    .tool {
       background: var(--card);
       border-radius: 8px;
       padding: 1.5rem;
       box-shadow: 0 2px 4px rgba(0,0,0,.05);
     }
-    .feature h3 { margin-top: 0; }
-    .lookup-controls { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .tool h3 { margin-top: 0; }
+    .tool-controls { display: flex; gap: 0.5rem; margin-top: 1rem; }
     input, button { font-size: 1rem; padding: 0.5rem; }
-    pre { background: #f0f0f0; padding: 1rem; overflow-x: auto; margin-top: 1rem; }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    dialog {
+      border: none;
+      border-radius: 8px;
+      padding: 1rem;
+      width: 90%;
+      max-width: 600px;
+    }
+    dialog::backdrop {
+      background: rgba(0,0,0,0.3);
+    }
+    pre { background: #f0f0f0; padding: 1rem; overflow-x: auto; }
     footer { font-size: 0.875rem; color: var(--muted); text-align: center; padding: 2rem 0; }
   </style>
 </head>
@@ -82,58 +94,91 @@
       <h1>HamOps</h1>
     </div>
     <nav>
-      <a href="#features">Features</a>
-      <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/DomCritchlow/hamops" target="_blank" rel="noopener">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" />
+        GitHub
+      </a>
     </nav>
   </header>
   <main>
     <section class="hero">
       <h2 class="hero-title">Ham Operations Center</h2>
       <p class="hero-subtitle">Everyday tools for amateur radio, accessible via web, API, and MCP.</p>
-      <button class="cta" onclick="document.getElementById('callsign').focus()">Callsign Lookup</button>
     </section>
     <section class="intro">
-      <p>HamOps brings the utilities that hams reach for every day into a single dashboard. Use the web interface, call the API, or let an MCP‑driven LLM do the heavy lifting.</p>
+      <p>HamOps brings together utilities that radio amateurs reach for every day. Invoke tools directly from the browser or call the underlying API endpoints.</p>
     </section>
 
-    <section id="features">
-      <h2>Available Now</h2>
-      <div class="feature-grid">
-        <div class="feature">
+    <section id="tools">
+      <h2>Tools Available Now</h2>
+      <div class="tool-grid">
+        <div class="tool">
           <h3>Callsign Lookup</h3>
-          <p>Search FCC registration data in seconds.</p>
-          <div class="lookup-controls">
-            <input id="callsign" placeholder="KK4ZMR" />
-            <button onclick="lookup()">Search</button>
+          <p>Search FCC registration data.</p>
+          <div class="tool-controls">
+            <input id="cs-lookup" placeholder="KK4ZMR" />
+            <button onclick="invoke('/api/callsign/' + document.getElementById('cs-lookup').value)">Query</button>
           </div>
-          <pre id="result"></pre>
+        </div>
+        <div class="tool">
+          <h3>APRS Locations</h3>
+          <p>Get latest location reports.</p>
+          <div class="tool-controls">
+            <input id="aprs-loc" placeholder="CALLSIGN" />
+            <button onclick="invoke('/api/aprs/locations/' + document.getElementById('aprs-loc').value)">Query</button>
+          </div>
+        </div>
+        <div class="tool">
+          <h3>APRS Weather</h3>
+          <p>Retrieve weather station data.</p>
+          <div class="tool-controls">
+            <input id="aprs-wx" placeholder="CALLSIGN" />
+            <button onclick="invoke('/api/aprs/weather/' + document.getElementById('aprs-wx').value)">Query</button>
+          </div>
+        </div>
+        <div class="tool">
+          <h3>APRS Messages</h3>
+          <p>Read recent APRS text messages.</p>
+          <div class="tool-controls">
+            <input id="aprs-msg" placeholder="CALLSIGN" />
+            <button onclick="invoke('/api/aprs/messages/' + document.getElementById('aprs-msg').value)">Query</button>
+          </div>
         </div>
       </div>
+    </section>
+
+    <section id="coming-soon">
       <h2>Coming Soon</h2>
-      <div class="feature-grid">
-        <div class="feature">
+      <div class="tool-grid">
+        <div class="tool">
           <h3>Frequency Planner</h3>
           <p>Plan your bands and allocations.</p>
         </div>
-        <div class="feature">
+        <div class="tool">
           <h3>Logbook</h3>
           <p>Track contacts and sync with popular services.</p>
         </div>
-        <div class="feature">
+        <div class="tool">
           <h3>LLM Co&#8209;Pilot</h3>
-          <p>Control radio operations with natural language via the MCP.</p>
+          <p>Control radio operations with natural language.</p>
         </div>
       </div>
     </section>
   </main>
   <footer>&copy; 2024 HamOps</footer>
+
+  <dialog id="code-modal">
+    <pre id="code-output"></pre>
+    <div style="text-align:right;margin-top:1rem;">
+      <button onclick="document.getElementById('code-modal').close()">Close</button>
+    </div>
+  </dialog>
   <script>
-    async function lookup() {
-      const cs = document.getElementById('callsign').value.trim();
-      if (!cs) return;
-      const r = await fetch(`/api/callsign/${cs}`);
+    async function invoke(url) {
+      const r = await fetch(url);
       const data = await r.json();
-      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      document.getElementById('code-output').textContent = JSON.stringify(data, null, 2);
+      document.getElementById('code-modal').showModal();
     }
   </script>
 </body>
