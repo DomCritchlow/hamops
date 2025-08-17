@@ -1,28 +1,25 @@
-# ---------------------------------------------------------------------------
-# Imports
-# ---------------------------------------------------------------------------
+"""Utilities for looking up callsign information via HamDB."""
+
+from typing import Any, Optional
+
 import httpx
-from typing import Optional, Any
 
 from hamops.models import CallsignRecord
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-def _to_float(x: Any):
+def _to_float(x: Any) -> Optional[float]:
+    """Best-effort float conversion returning ``None`` on failure."""
     try:
         return float(x)
     except Exception:
         return None
 
 
-# ---------------------------------------------------------------------------
-# Callsign lookup
-# ---------------------------------------------------------------------------
 async def lookup_callsign(callsign: str) -> Optional[CallsignRecord]:
     """Minimal, forgiving HamDB lookup.
-    Returns None on any error or when the callsign isn't found."""
+
+    Returns ``None`` on any error or when the callsign isn't found.
+    """
     url = f"http://api.hamdb.org/{callsign.upper()}/json"
     try:
         async with httpx.AsyncClient(timeout=6, follow_redirects=True) as client:

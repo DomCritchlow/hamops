@@ -10,6 +10,18 @@ is meant to grow into a library of amateur‑radio utilities exposed over HTTP.
 - **MCP:** operation id `callsign_lookup`
 - **Web UI:** visit the root URL and use the form to query a callsign
 
+### APRS Location
+- **REST:** `GET /api/aprs/locations/{callsign}`
+- **MCP:** operation id `aprs_locations`
+
+### APRS Weather
+- **REST:** `GET /api/aprs/weather/{callsign}`
+- **MCP:** operation id `aprs_weather`
+
+### APRS Messages
+- **REST:** `GET /api/aprs/messages/{callsign}`
+- **MCP:** operation id `aprs_messages`
+
 ## Web Interface
 
 The root endpoint (`/`) serves a minimal single‑page app that works on desktop
@@ -18,10 +30,15 @@ JSON response from the service.
 
 ## API Usage
 
-For programmatic access, use the `/api` prefix:
+For programmatic access, use the `/api` prefix. If the `API_KEY`
+environment variable is set, include an `x-api-key` header with each
+request:
 
 - `GET /api` – service metadata
 - `GET /api/callsign/{callsign}` – perform a lookup
+- `GET /api/aprs/locations/{callsign}` – APRS location history
+- `GET /api/aprs/weather/{callsign}` – latest APRS weather report
+- `GET /api/aprs/messages/{callsign}` – APRS messages to/from a callsign
 - `GET /health` – basic health check
 
 ## Development
