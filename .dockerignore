@@ -42,10 +42,6 @@ pip-delete-this-directory.txt
 ehthumbs.db
 Thumbs.db
 
-# Documentation
-*.md
-docs/
-
 # Docker
 Dockerfile*
 docker-compose*

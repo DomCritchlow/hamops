@@ -1,11 +1,21 @@
+# ---------------------------------------------------------------------------
+# Imports
+# ---------------------------------------------------------------------------
 import json, time, uuid, logging
 from typing import Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+# ---------------------------------------------------------------------------
+# Logger
+# ---------------------------------------------------------------------------
 LOG = logging.getLogger("hamops")
 
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def _redact_headers(headers: dict) -> dict:
     redacted = {}
     for k, v in headers.items():
@@ -15,7 +25,12 @@ def _redact_headers(headers: dict) -> dict:
             redacted[k] = v
     return redacted
 
+
+# ---------------------------------------------------------------------------
+# Middleware
+# ---------------------------------------------------------------------------
 class RequestLogMiddleware(BaseHTTPMiddleware):
+    """Structured HTTP request logging."""
 
     def __init__(self, app, max_body=2048):
         super().__init__(app)
