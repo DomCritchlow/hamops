@@ -2,22 +2,131 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hamops</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HamOps – Ham Operations Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    :root {
+      --bg: #f8f8fb;
+      --card: #ffffff;
+      --fg: #1b1b1f;
+      --muted: #5f5f62;
+      --accent: #635bff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { width: 32px; height: 32px; }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    nav a {
+      margin-left: 1rem;
+      text-decoration: none;
+      color: var(--fg);
+      font-weight: 500;
+    }
+    main { flex: 1; max-width: 960px; margin: 0 auto; padding: 2rem; }
+    .hero { text-align: center; padding: 3rem 1rem; }
+    .hero-title { font-size: 2.5rem; margin: 0 0 1rem; }
+    .hero-subtitle { color: var(--muted); font-size: 1.2rem; margin: 0 0 2rem; }
+    .cta {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .intro { max-width: 720px; margin: 0 auto; text-align: center; line-height: 1.5; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    #features > h2 { text-align: center; margin-top: 3rem; }
+    .feature {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    }
+    .feature h3 { margin-top: 0; }
+    .lookup-controls { display: flex; gap: 0.5rem; margin-top: 1rem; }
     input, button { font-size: 1rem; padding: 0.5rem; }
-    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+    pre { background: #f0f0f0; padding: 1rem; overflow-x: auto; margin-top: 1rem; }
+    footer { font-size: 0.875rem; color: var(--muted); text-align: center; padding: 2rem 0; }
   </style>
 </head>
 <body>
-  <h1>Hamops</h1>
-  <p>Look up amateur radio callsigns with the form below.</p>
-  <div>
-    <input id="callsign" placeholder="KK4ZMR" />
-    <button onclick="lookup()">Search</button>
-  </div>
-  <pre id="result"></pre>
+  <header>
+    <div class="brand">
+      <img src="logo.svg" alt="HamOps logo" class="logo" />
+      <h1>HamOps</h1>
+    </div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero">
+      <h2 class="hero-title">Ham Operations Center</h2>
+      <p class="hero-subtitle">Everyday tools for amateur radio, accessible via web, API, and MCP.</p>
+      <button class="cta" onclick="document.getElementById('callsign').focus()">Callsign Lookup</button>
+    </section>
+    <section class="intro">
+      <p>HamOps brings the utilities that hams reach for every day into a single dashboard. Use the web interface, call the API, or let an MCP‑driven LLM do the heavy lifting.</p>
+    </section>
+
+    <section id="features">
+      <h2>Available Now</h2>
+      <div class="feature-grid">
+        <div class="feature">
+          <h3>Callsign Lookup</h3>
+          <p>Search FCC registration data in seconds.</p>
+          <div class="lookup-controls">
+            <input id="callsign" placeholder="KK4ZMR" />
+            <button onclick="lookup()">Search</button>
+          </div>
+          <pre id="result"></pre>
+        </div>
+      </div>
+      <h2>Coming Soon</h2>
+      <div class="feature-grid">
+        <div class="feature">
+          <h3>Frequency Planner</h3>
+          <p>Plan your bands and allocations.</p>
+        </div>
+        <div class="feature">
+          <h3>Logbook</h3>
+          <p>Track contacts and sync with popular services.</p>
+        </div>
+        <div class="feature">
+          <h3>LLM Co&#8209;Pilot</h3>
+          <p>Control radio operations with natural language via the MCP.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>&copy; 2024 HamOps</footer>
   <script>
     async function lookup() {
       const cs = document.getElementById('callsign').value.trim();
