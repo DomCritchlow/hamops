@@ -17,6 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import APIKeyHeader
 from fastapi_mcp import FastApiMCP
+from fastapi.staticfiles import StaticFiles
+
 
 from .adapters.callsign import lookup_callsign
 from .adapters.aprs import (
@@ -44,6 +46,7 @@ def create_app() -> FastAPI:
     """
     app = FastAPI(title="Hamops")
 
+    app.mount("/web", StaticFiles(directory="hamops/web"), name="web")
     # -----------------------------------------------------------------------
     # Middleware
     # -----------------------------------------------------------------------
@@ -99,7 +102,6 @@ def create_app() -> FastAPI:
         "/api/callsign/{callsign}",
         operation_id="callsign_lookup",
         tags=["HamDB"],
-        dependencies=[Depends(require_api_key)],
     )
     async def rest_callsign(callsign: str) -> JSONResponse:
         """Look up a callsign via the HamDB service.
@@ -116,7 +118,6 @@ def create_app() -> FastAPI:
         "/api/aprs/locations/{callsign}",
         operation_id="aprs_locations",
         tags=["APRS"],
-        dependencies=[Depends(require_api_key)],
     )
     async def rest_aprs_locations(callsign: str) -> JSONResponse:
         """Fetch all APRS location records for a callsign (base or extended).
@@ -133,7 +134,6 @@ def create_app() -> FastAPI:
         "/api/aprs/weather/{callsign}",
         operation_id="aprs_weather",
         tags=["APRS"],
-        dependencies=[Depends(require_api_key)],
     )
     async def rest_aprs_weather(callsign: str) -> JSONResponse:
         """Retrieve the latest weather report for an APRS weather station.
@@ -153,7 +153,6 @@ def create_app() -> FastAPI:
         "/api/aprs/messages/{callsign}",
         operation_id="aprs_messages",
         tags=["APRS"],
-        dependencies=[Depends(require_api_key)],
     )
     async def rest_aprs_messages(callsign: str) -> JSONResponse:
         """Fetch APRS text messages for a callsign (sent to or from).

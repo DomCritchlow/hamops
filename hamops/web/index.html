@@ -7,10 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="icon" type="image/svg+xml" href="/web/logo.svg">
   <style>
     :root {
-      --bg: #ead1bf;
+      --bg: #f6ede5;
       --card: #ffffff;
       --fg: #1b1b1f;
       --muted: #5f5f62;
@@ -90,7 +90,7 @@
 <body>
   <header>
     <div class="brand">
-      <img src="logo.svg" alt="HamOps logo" class="logo" />
+      <img src="/web/logo.svg" alt="HamOps logo" class="logo" />
       <h1>HamOps</h1>
     </div>
     <nav>
@@ -116,7 +116,7 @@
           <h3>Callsign Lookup</h3>
           <p>Search FCC registration data.</p>
           <div class="tool-controls">
-            <input id="cs-lookup" placeholder="KK4ZMR" />
+            <input id="cs-lookup" placeholder="CALLSIGN" />
             <button onclick="invoke('/api/callsign/' + document.getElementById('cs-lookup').value)">Query</button>
           </div>
         </div>
@@ -165,7 +165,7 @@
       </div>
     </section>
   </main>
-  <footer>&copy; 2024 HamOps</footer>
+  <footer>&copy; 2025 HamOps</footer>
 
   <dialog id="code-modal">
     <pre id="code-output"></pre>
