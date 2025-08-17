@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-08-17T21:03:59.692069",
+  "solar_flux": 120,
+  "k_index": 2,
+  "bands": {
+    "20m": {
+      "condition": "good",
+      "muf": 28.5
+    },
+    "40m": {
+      "condition": "fair",
+      "noise": "S3"
+    },
+    "80m": {
+      "condition": "poor",
+      "noise": "S7"
+    }
+  }
+}

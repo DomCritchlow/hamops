@@ -1,0 +1,41 @@
+{
+  "jurisdiction": {
+    "code": "CA",
+    "name": "Canada",
+    "regulatory_body": "ISED",
+    "license_classes": [
+      "basic",
+      "basic_honours",
+      "advanced"
+    ]
+  },
+  "bands": [
+    {
+      "band_name": "80m",
+      "start_freq_mhz": 3.5,
+      "end_freq_mhz": 4.0,
+      "segments": [
+        {
+          "start_freq_mhz": 3.5,
+          "end_freq_mhz": 3.7,
+          "license_class": "advanced",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "ISED"
+        },
+        {
+          "start_freq_mhz": 3.7,
+          "end_freq_mhz": 4.0,
+          "license_class": "advanced",
+          "permitted_modes": [
+            "Phone",
+            "Digital"
+          ],
+          "source": "ISED"
+        }
+      ]
+    }
+  ]
+}

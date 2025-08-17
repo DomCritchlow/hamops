@@ -1,0 +1,450 @@
+{
+  "jurisdiction": {
+    "code": "US",
+    "name": "United States",
+    "regulatory_body": "FCC",
+    "license_classes": [
+      "technician",
+      "general",
+      "extra"
+    ]
+  },
+  "bands": [
+    {
+      "band_name": "160m",
+      "start_freq_mhz": 1.8,
+      "end_freq_mhz": 2.0,
+      "segments": [
+        {
+          "start_freq_mhz": 1.8,
+          "end_freq_mhz": 2.0,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 1.8,
+          "end_freq_mhz": 2.0,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "80m",
+      "start_freq_mhz": 3.5,
+      "end_freq_mhz": 4.0,
+      "segments": [
+        {
+          "start_freq_mhz": 3.5,
+          "end_freq_mhz": 4.0,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 3.525,
+          "end_freq_mhz": 3.6,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 3.8,
+          "end_freq_mhz": 4.0,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 3.525,
+          "end_freq_mhz": 3.6,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "40m",
+      "start_freq_mhz": 7.0,
+      "end_freq_mhz": 7.3,
+      "segments": [
+        {
+          "start_freq_mhz": 7.0,
+          "end_freq_mhz": 7.3,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 7.025,
+          "end_freq_mhz": 7.125,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 7.175,
+          "end_freq_mhz": 7.3,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 7.025,
+          "end_freq_mhz": 7.125,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "30m",
+      "start_freq_mhz": 10.1,
+      "end_freq_mhz": 10.15,
+      "segments": []
+    },
+    {
+      "band_name": "20m",
+      "start_freq_mhz": 14.0,
+      "end_freq_mhz": 14.35,
+      "segments": [
+        {
+          "start_freq_mhz": 14.0,
+          "end_freq_mhz": 14.35,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 14.025,
+          "end_freq_mhz": 14.15,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 14.225,
+          "end_freq_mhz": 14.35,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 14.025,
+          "end_freq_mhz": 14.07,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "17m",
+      "start_freq_mhz": 18.068,
+      "end_freq_mhz": 18.168,
+      "segments": []
+    },
+    {
+      "band_name": "15m",
+      "start_freq_mhz": 21.0,
+      "end_freq_mhz": 21.45,
+      "segments": [
+        {
+          "start_freq_mhz": 21.0,
+          "end_freq_mhz": 21.45,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 21.025,
+          "end_freq_mhz": 21.2,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 21.275,
+          "end_freq_mhz": 21.45,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 21.025,
+          "end_freq_mhz": 21.2,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "12m",
+      "start_freq_mhz": 24.89,
+      "end_freq_mhz": 24.99,
+      "segments": []
+    },
+    {
+      "band_name": "10m",
+      "start_freq_mhz": 28.0,
+      "end_freq_mhz": 29.7,
+      "segments": [
+        {
+          "start_freq_mhz": 28.0,
+          "end_freq_mhz": 29.7,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 28.0,
+          "end_freq_mhz": 29.7,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 28.0,
+          "end_freq_mhz": 28.3,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 28.3,
+          "end_freq_mhz": 28.5,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Phone",
+            "Digital"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "6m",
+      "start_freq_mhz": 50.0,
+      "end_freq_mhz": 54.0,
+      "segments": [
+        {
+          "start_freq_mhz": 50.0,
+          "end_freq_mhz": 54.0,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 50.0,
+          "end_freq_mhz": 54.0,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 50.0,
+          "end_freq_mhz": 54.0,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "2m",
+      "start_freq_mhz": 144.0,
+      "end_freq_mhz": 148.0,
+      "segments": [
+        {
+          "start_freq_mhz": 144.0,
+          "end_freq_mhz": 148.0,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 144.0,
+          "end_freq_mhz": 148.0,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 144.0,
+          "end_freq_mhz": 148.0,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "1.25m",
+      "start_freq_mhz": 222.0,
+      "end_freq_mhz": 225.0,
+      "segments": []
+    },
+    {
+      "band_name": "70cm",
+      "start_freq_mhz": 420.0,
+      "end_freq_mhz": 450.0,
+      "segments": [
+        {
+          "start_freq_mhz": 420.0,
+          "end_freq_mhz": 450.0,
+          "license_class": "extra",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 420.0,
+          "end_freq_mhz": 450.0,
+          "license_class": "general",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        },
+        {
+          "start_freq_mhz": 420.0,
+          "end_freq_mhz": 450.0,
+          "license_class": "technician",
+          "permitted_modes": [
+            "CW",
+            "Digital",
+            "Phone"
+          ],
+          "source": "FCC Part 97"
+        }
+      ]
+    },
+    {
+      "band_name": "33cm",
+      "start_freq_mhz": 902.0,
+      "end_freq_mhz": 928.0,
+      "segments": []
+    },
+    {
+      "band_name": "23cm",
+      "start_freq_mhz": 1240.0,
+      "end_freq_mhz": 1300.0,
+      "segments": []
+    }
+  ],
+  "effective_date": "2024-05-01",
+  "version": "Part 97 - 2024",
+  "source_documents": [
+    "FCC Part 97.301",
+    "FCC Part 97.303",
+    "FCC Part 97.305"
+  ]
+}
