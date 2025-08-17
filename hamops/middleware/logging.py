@@ -11,7 +11,14 @@ from starlette.responses import Response
 # ---------------------------------------------------------------------------
 # Logger
 # ---------------------------------------------------------------------------
+
 LOG = logging.getLogger("hamops")
+if not LOG.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    handler.setFormatter(formatter)
+    LOG.addHandler(handler)
+LOG.setLevel(logging.INFO)
 
 def log_info(event: str, **kwargs):
     log = {"level": "info", "event": event, **kwargs}

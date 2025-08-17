@@ -21,8 +21,9 @@ from fastapi_mcp import FastApiMCP
 
 from .adapters.callsign import lookup_callsign
 from .adapters.aprs import (
-    get_aprs_location,
+    get_aprs_locations,
     get_aprs_weather,
+    get_aprs_messages,
 )
 from .middleware import RequestLogMiddleware
 
@@ -94,7 +95,7 @@ def create_app() -> FastAPI:
         """Health check endpoint."""
         return {"ok": True}
 
-    @app.get("/api/callsign/{callsign}", operation_id="callsign_lookup")
+    @app.get("/api/callsign/{callsign}", operation_id="callsign_lookup", tags=["HamDB"])
     async def rest_callsign(callsign: str):
         """Look up a callsign via the HamDB service.
 
@@ -106,22 +107,19 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="Callsign not found")
         return JSONResponse({"record": rec.model_dump()})
 
-    @app.get("/api/aprs/location/{callsign}", operation_id="aprs_location")
-    async def rest_aprs_location(callsign: str):
-        """Fetch the most recent APRS location for a callsign.
+    @app.get("/api/aprs/locations/{callsign}", operation_id="aprs_locations", tags=["APRS"])
+    async def rest_aprs_locations(callsign: str):
+        """Fetch all APRS location records for a callsign (base or extended).
 
-        This endpoint queries the aprs.fi API (if configured) for the latest
-        position report associated with ``callsign``.  When successful it
-        returns a JSON object with a ``record`` field containing a
-        serialized :class:`~hamops.models.aprs.APRSLocationRecord`.
-        If no entry is found, a 404 error is returned.
+        Returns a JSON object with a 'records' field containing a list of
+        serialized APRSLocationRecord objects. If no entries are found, returns 404.
         """
-        record = await get_aprs_location(callsign)
-        if not record:
+        records = await get_aprs_locations(callsign)
+        if not records:
             raise HTTPException(status_code=404, detail="APRS station not found")
-        return JSONResponse({"record": record.model_dump()})
+        return JSONResponse({"records": [rec.model_dump() for rec in records]})
 
-    @app.get("/api/aprs/weather/{callsign}", operation_id="aprs_weather")
+    @app.get("/api/aprs/weather/{callsign}", operation_id="aprs_weather", tags=["APRS"])
     async def rest_aprs_weather(callsign: str):
         """Retrieve the latest weather report for an APRS weather station.
 
@@ -134,13 +132,26 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="APRS weather station not found")
         return JSONResponse({"record": record.model_dump()})
 
+
+    @app.get("/api/aprs/messages/{callsign}", operation_id="aprs_messages", tags=["APRS"])
+    async def rest_aprs_messages(callsign: str):
+        """Fetch APRS text messages for a callsign (sent to or from).
+
+        Returns a JSON object with a 'records' field containing a list of
+        serialized APRSMessageRecord objects. If no entries are found, returns 404.
+        """
+        records = await get_aprs_messages(callsign)
+        if not records:
+            raise HTTPException(status_code=404, detail="No APRS messages found")
+        return JSONResponse({"records": [rec.model_dump() for rec in records]})
+
     # -----------------------------------------------------------------------
     # MCP server mount
     # -----------------------------------------------------------------------
     # Include all operation identifiers so they are exposed over the MCP server
     mcp = FastApiMCP(
         app,
-        include_operations=["callsign_lookup", "aprs_location", "aprs_track", "aprs_weather"],
+        include_operations=["callsign_lookup", "aprs_locations", "aprs_weather", "aprs_messages"],
     )
     mcp.mount()
 

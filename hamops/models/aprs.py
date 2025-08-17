@@ -1,3 +1,5 @@
+
+
 """Pydantic models for APRS data.
 
 This module defines data structures used by the APRS adapters.  Each
@@ -40,15 +42,12 @@ class APRSLocationRecord(BaseModel):
 
 
 class APRSWeatherRecord(BaseModel):
-    """Normalized APRS weather data.
-
-    All values are returned in metric units per the aprs.fi API.  Values
-    are converted to floats where appropriate.  Fields absent from
-    responses remain as ``None``.
-    """
+    """Normalized APRS weather data, including location (lat/lng)."""
 
     name: str
     time: Optional[int] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     temp: Optional[float] = None
     pressure: Optional[float] = None
     humidity: Optional[float] = None
@@ -59,3 +58,13 @@ class APRSWeatherRecord(BaseModel):
     rain_24h: Optional[float] = None
     rain_mn: Optional[float] = None
     luminosity: Optional[float] = None
+
+
+class APRSMessageRecord(BaseModel):
+    """Normalized APRS message data."""
+    time: Optional[int] = None
+    fromcall: Optional[str] = None
+    tocall: Optional[str] = None
+    message: Optional[str] = None
+    path: Optional[str] = None
+    type: Optional[str] = None
