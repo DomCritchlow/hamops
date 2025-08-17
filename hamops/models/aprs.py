@@ -1,26 +1,23 @@
-
-
 """Pydantic models for APRS data.
 
-This module defines data structures used by the APRS adapters.  Each
-class mirrors the shape of the objects returned from the aprs.fi API
-when querying location and weather information.  Optional fields are
-used liberally to accommodate missing data.
+This module defines data structures used by the APRS adapters. Each
+class mirrors the shape of objects returned from the aprs.fi API when
+querying location and weather information. Optional fields are used
+liberally to accommodate missing data.
 """
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import BaseModel
-from typing import List, Optional
 
 
 class APRSLocationRecord(BaseModel):
     """Normalized APRS location data returned from the aprs.fi service.
 
     All numeric fields (lat/lng/course/speed/altitude) are converted to
-    Python floats when possible.  Times are returned as Unix epoch
-    seconds (int) if present.  Additional APRS metadata is surfaced
-    directly as strings.
+    floats when possible. Times are returned as Unix epoch seconds if present.
     """
 
     name: str
@@ -62,6 +59,7 @@ class APRSWeatherRecord(BaseModel):
 
 class APRSMessageRecord(BaseModel):
     """Normalized APRS message data."""
+
     time: Optional[int] = None
     fromcall: Optional[str] = None
     tocall: Optional[str] = None

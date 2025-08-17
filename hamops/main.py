@@ -11,12 +11,11 @@ from __future__ import annotations
 
 import os
 from importlib import resources
-from typing import List
 
-from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi.security import APIKeyHeader
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import APIKeyHeader
 from fastapi_mcp import FastApiMCP
 
 from .adapters.callsign import lookup_callsign
@@ -62,7 +61,8 @@ def create_app() -> FastAPI:
     # -----------------------------------------------------------------------
     api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
-    def require_api_key(x_api_key: str | None = Header(default=None)):
+    def require_api_key(x_api_key: str = Depends(api_key_header)) -> None:
+        """Validate the ``x-api-key`` header against ``API_KEY``."""
         if API_KEY and x_api_key != API_KEY:
             raise HTTPException(status_code=401, detail="Missing or invalid API key")
 
@@ -95,8 +95,13 @@ def create_app() -> FastAPI:
         """Health check endpoint."""
         return {"ok": True}
 
-    @app.get("/api/callsign/{callsign}", operation_id="callsign_lookup", tags=["HamDB"])
-    async def rest_callsign(callsign: str):
+    @app.get(
+        "/api/callsign/{callsign}",
+        operation_id="callsign_lookup",
+        tags=["HamDB"],
+        dependencies=[Depends(require_api_key)],
+    )
+    async def rest_callsign(callsign: str) -> JSONResponse:
         """Look up a callsign via the HamDB service.
 
         Returns a JSON representation of the normalized callsign record or
@@ -107,8 +112,13 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="Callsign not found")
         return JSONResponse({"record": rec.model_dump()})
 
-    @app.get("/api/aprs/locations/{callsign}", operation_id="aprs_locations", tags=["APRS"])
-    async def rest_aprs_locations(callsign: str):
+    @app.get(
+        "/api/aprs/locations/{callsign}",
+        operation_id="aprs_locations",
+        tags=["APRS"],
+        dependencies=[Depends(require_api_key)],
+    )
+    async def rest_aprs_locations(callsign: str) -> JSONResponse:
         """Fetch all APRS location records for a callsign (base or extended).
 
         Returns a JSON object with a 'records' field containing a list of
@@ -119,8 +129,13 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="APRS station not found")
         return JSONResponse({"records": [rec.model_dump() for rec in records]})
 
-    @app.get("/api/aprs/weather/{callsign}", operation_id="aprs_weather", tags=["APRS"])
-    async def rest_aprs_weather(callsign: str):
+    @app.get(
+        "/api/aprs/weather/{callsign}",
+        operation_id="aprs_weather",
+        tags=["APRS"],
+        dependencies=[Depends(require_api_key)],
+    )
+    async def rest_aprs_weather(callsign: str) -> JSONResponse:
         """Retrieve the latest weather report for an APRS weather station.
 
         Queries the aprs.fi API for weather data associated with the given
@@ -129,12 +144,18 @@ def create_app() -> FastAPI:
         """
         record = await get_aprs_weather(callsign)
         if not record:
-            raise HTTPException(status_code=404, detail="APRS weather station not found")
+            raise HTTPException(
+                status_code=404, detail="APRS weather station not found"
+            )
         return JSONResponse({"record": record.model_dump()})
 
-
-    @app.get("/api/aprs/messages/{callsign}", operation_id="aprs_messages", tags=["APRS"])
-    async def rest_aprs_messages(callsign: str):
+    @app.get(
+        "/api/aprs/messages/{callsign}",
+        operation_id="aprs_messages",
+        tags=["APRS"],
+        dependencies=[Depends(require_api_key)],
+    )
+    async def rest_aprs_messages(callsign: str) -> JSONResponse:
         """Fetch APRS text messages for a callsign (sent to or from).
 
         Returns a JSON object with a 'records' field containing a list of
@@ -151,7 +172,12 @@ def create_app() -> FastAPI:
     # Include all operation identifiers so they are exposed over the MCP server
     mcp = FastApiMCP(
         app,
-        include_operations=["callsign_lookup", "aprs_locations", "aprs_weather", "aprs_messages"],
+        include_operations=[
+            "callsign_lookup",
+            "aprs_locations",
+            "aprs_weather",
+            "aprs_messages",
+        ],
     )
     mcp.mount()
 

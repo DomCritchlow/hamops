@@ -1,13 +1,10 @@
-# ---------------------------------------------------------------------------
-# Imports
-# ---------------------------------------------------------------------------
-from pydantic import BaseModel
+"""Pydantic model representing a normalized callsign record."""
+
 from typing import Optional
 
+from pydantic import BaseModel
 
-# ---------------------------------------------------------------------------
-# Data models
-# ---------------------------------------------------------------------------
+
 class CallsignRecord(BaseModel):
     """Normalized callsign data returned from the HamDB service."""
 

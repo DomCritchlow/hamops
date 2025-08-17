@@ -1,27 +1,25 @@
-
-
-
-"""
-APRS.fi adapter for location and weather queries.
-
-This module provides simple async functions to fetch APRS location and weather data using the APRS.fi API.
-Set the environment variable APRFI_API_KEY to your API key. Optionally, override the base URL with APRS_API_BASE_URL.
-"""
+"""APRS.fi adapter for location, weather, and message queries."""
 
 from __future__ import annotations
 
 import os
+from typing import Any, Dict, Optional
+
 import httpx
-from hamops.middleware.logging import log_info, log_warning, log_error
 
-from typing import Optional, Any, Dict
+from hamops.middleware.logging import log_error, log_info, log_warning
+from hamops.models.aprs import (
+    APRSLocationRecord,
+    APRSMessageRecord,
+    APRSWeatherRecord,
+)
 
-from hamops.models.aprs import APRSLocationRecord, APRSWeatherRecord, APRSMessageRecord
 
 async def get_aprs_messages(callsign: str) -> list[APRSMessageRecord]:
-    """
-    Fetch APRS messages for a callsign (sent to or from).
-    Returns a list of APRSMessageRecord objects, or empty list if none found.
+    """Fetch APRS messages for a callsign.
+
+    Returns a list of ``APRSMessageRecord`` objects, or an empty list if
+    none are found.
     """
     data = await _fetch_aprs({"what": "msg", "name": callsign})
     log_info("aprs_messages_raw_response", callsign=callsign, raw_response=data)
@@ -30,17 +28,19 @@ async def get_aprs_messages(callsign: str) -> list[APRSMessageRecord]:
     entries = data.get("entries") or []
     result = []
     for entry in entries:
-        result.append(APRSMessageRecord(
-            time=_to_int(entry.get("time")),
-            fromcall=entry.get("fromcall"),
-            tocall=entry.get("tocall"),
-            message=entry.get("message"),
-            path=entry.get("path"),
-            type=entry.get("type"),
-        ))
+        result.append(
+            APRSMessageRecord(
+                time=_to_int(entry.get("time")),
+                fromcall=entry.get("fromcall"),
+                tocall=entry.get("tocall"),
+                message=entry.get("message"),
+                path=entry.get("path"),
+                type=entry.get("type"),
+            )
+        )
     return result
 
-# --- Helpers ---
+
 def _to_float(val: Any) -> Optional[float]:
     """Convert value to float, return None if not possible or blank/placeholder."""
     try:
@@ -50,6 +50,7 @@ def _to_float(val: Any) -> Optional[float]:
         return float(s)
     except Exception:
         return None
+
 
 def _to_int(val: Any) -> Optional[int]:
     """Convert value to int, return None if not possible or blank/placeholder."""
@@ -66,7 +67,9 @@ async def _fetch_aprs(params: Dict[str, str | int | float]) -> Optional[dict]:
     """Query the APRS.fi API and return the JSON response dict, or None on error."""
     api_key = os.getenv("APRFI_API_KEY")
     if not api_key:
-        log_warning("aprs_api_key_missing", message="APRFI_API_KEY not set.", params=params)
+        log_warning(
+            "aprs_api_key_missing", message="APRFI_API_KEY not set.", params=params
+        )
         return None
     base_url = os.getenv("APRS_API_BASE_URL", "https://api.aprs.fi/api/get")
     query = {**params, "apikey": api_key, "format": "json"}
@@ -75,7 +78,9 @@ async def _fetch_aprs(params: Dict[str, str | int | float]) -> Optional[dict]:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(base_url, params=query)
         if resp.status_code != 200:
-            log_warning("aprs_api_response_status", status_code=resp.status_code, text=resp.text)
+            log_warning(
+                "aprs_api_response_status", status_code=resp.status_code, text=resp.text
+            )
             return None
         return resp.json()
     except Exception as e:
@@ -84,45 +89,55 @@ async def _fetch_aprs(params: Dict[str, str | int | float]) -> Optional[dict]:
 
 
 async def get_aprs_locations(callsign: str) -> list[APRSLocationRecord]:
-    """
-    Return all APRS location records matching a callsign (base or extended).
-    If only one match, returns a single-item list. If multiple, returns all.
-    Returns an empty list if none found or on error.
+    """Return APRS location records matching a callsign.
+
+    If only one match exists, a single-item list is returned. Multiple
+    matches are all included. An empty list is returned on error or when
+    no records are found.
     """
     data = await _fetch_aprs({"what": "loc", "name": callsign})
     if not data or not isinstance(data, dict):
         log_info("aprs_locations_no_data", callsign=callsign, data_type=str(type(data)))
         return []
     entries = data.get("entries") or []
-    log_info("aprs_locations_entries_fetched", callsign=callsign, num_entries=len(entries))
+    log_info(
+        "aprs_locations_entries_fetched", callsign=callsign, num_entries=len(entries)
+    )
     result = []
     for entry in entries:
-        log_info("aprs_locations_entry", callsign=callsign, entry_name=entry.get("name"), entry_time=entry.get("time"), entry=entry)
-        result.append(APRSLocationRecord(
-            name=entry.get("name", callsign),
-            time=_to_int(entry.get("time")),
-            lasttime=_to_int(entry.get("lasttime")),
-            lat=_to_float(entry.get("lat")),
-            lng=_to_float(entry.get("lng")),
-            course=_to_float(entry.get("course")),
-            speed=_to_float(entry.get("speed")),
-            altitude=_to_float(entry.get("altitude")),
-            symbol=entry.get("symbol"),
-            srccall=entry.get("srccall"),
-            dstcall=entry.get("dstcall"),
-            comment=entry.get("comment"),
-            path=entry.get("path"),
-            phg=entry.get("phg"),
-            status=entry.get("status"),
-            status_lasttime=_to_int(entry.get("status_lasttime")),
-        ))
+        log_info(
+            "aprs_locations_entry",
+            callsign=callsign,
+            entry_name=entry.get("name"),
+            entry_time=entry.get("time"),
+            entry=entry,
+        )
+        result.append(
+            APRSLocationRecord(
+                name=entry.get("name", callsign),
+                time=_to_int(entry.get("time")),
+                lasttime=_to_int(entry.get("lasttime")),
+                lat=_to_float(entry.get("lat")),
+                lng=_to_float(entry.get("lng")),
+                course=_to_float(entry.get("course")),
+                speed=_to_float(entry.get("speed")),
+                altitude=_to_float(entry.get("altitude")),
+                symbol=entry.get("symbol"),
+                srccall=entry.get("srccall"),
+                dstcall=entry.get("dstcall"),
+                comment=entry.get("comment"),
+                path=entry.get("path"),
+                phg=entry.get("phg"),
+                status=entry.get("status"),
+                status_lasttime=_to_int(entry.get("status_lasttime")),
+            )
+        )
     log_info("aprs_locations_result_count", callsign=callsign, result_count=len(result))
     return result
 
 
-
 async def get_aprs_weather(callsign: str) -> Optional[APRSWeatherRecord]:
-    """Get the latest weather report for an APRS weather station callsign, or None if not found."""
+    """Get the latest weather report for an APRS weather station."""
     data = await _fetch_aprs({"what": "wx", "name": callsign})
     if not data or not isinstance(data, dict):
         return None
@@ -135,7 +150,9 @@ async def get_aprs_weather(callsign: str) -> Optional[APRSWeatherRecord]:
     # If lat/lng missing, try to fetch from location query
     if lat is None or lng is None:
         loc_data = await _fetch_aprs({"what": "loc", "name": callsign})
-        log_info("aprs_weather_location_fallback", callsign=callsign, loc_response=loc_data)
+        log_info(
+            "aprs_weather_location_fallback", callsign=callsign, loc_response=loc_data
+        )
         if loc_data and isinstance(loc_data, dict):
             loc_entries = loc_data.get("entries") or []
             if loc_entries:
