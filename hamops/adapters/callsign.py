@@ -1,19 +1,28 @@
-import os
+# ---------------------------------------------------------------------------
+# Imports
+# ---------------------------------------------------------------------------
 import httpx
 from typing import Optional, Any
-from hamops.schemas import CallsignRecord
 
+from hamops.models import CallsignRecord
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 def _to_float(x: Any):
     try:
         return float(x)
     except Exception:
         return None
 
+
+# ---------------------------------------------------------------------------
+# Callsign lookup
+# ---------------------------------------------------------------------------
 async def lookup_callsign(callsign: str) -> Optional[CallsignRecord]:
-    """
-    Minimal, forgiving HamDB lookup.
-    Returns None on any error or when the callsign isn't found.
-    """
+    """Minimal, forgiving HamDB lookup.
+    Returns None on any error or when the callsign isn't found."""
     url = f"http://api.hamdb.org/{callsign.upper()}/json"
     try:
         async with httpx.AsyncClient(timeout=6, follow_redirects=True) as client:
@@ -45,11 +54,12 @@ async def lookup_callsign(callsign: str) -> Optional[CallsignRecord]:
             grid=cs.get("grid") or cs.get("gridsquare"),
             lat=_to_float(cs.get("lat")),
             lon=_to_float(cs.get("lon")),
-            expires=cs.get("expires")
+            expires=cs.get("expires"),
         )
 
     # If there is no callsign object, optionally check messages for NOT_FOUND—but safely.
     msgs = hamdb.get("messages", [])
+
     def _msg_text(m):
         if isinstance(m, dict):
             return (m.get("status") or m.get("message") or "").upper()

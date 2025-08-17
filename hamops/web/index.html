@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hamops</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    input, button { font-size: 1rem; padding: 0.5rem; }
+    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>Hamops</h1>
+  <p>Look up amateur radio callsigns with the form below.</p>
+  <div>
+    <input id="callsign" placeholder="K7XYZ" />
+    <button onclick="lookup()">Search</button>
+  </div>
+  <pre id="result"></pre>
+  <script>
+    async function lookup() {
+      const cs = document.getElementById('callsign').value.trim();
+      if (!cs) return;
+      const r = await fetch(`/api/callsign/${cs}`);
+      const data = await r.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
