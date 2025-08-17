@@ -30,7 +30,7 @@ JSON response from the service.
 
 ## API Usage
 
-For programmatic access, use the `/api` prefix. If the `API_KEY`
+For programmatic access, use the `/api` prefix. If the `OPENAI_API_KEY`
 environment variable is set, include an `x-api-key` header with each
 request:
 

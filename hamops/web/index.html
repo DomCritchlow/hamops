@@ -116,7 +116,7 @@
           <h3>Callsign Lookup</h3>
           <p>Search FCC registration data.</p>
           <div class="tool-controls">
-            <input id="cs-lookup" placeholder="CALLSIGN" />
+            <input id="cs-lookup" placeholder="KK4ZMR" />
             <button onclick="invoke('/api/callsign/' + document.getElementById('cs-lookup').value)">Query</button>
           </div>
         </div>
@@ -124,7 +124,7 @@
           <h3>APRS Locations</h3>
           <p>Get latest location reports.</p>
           <div class="tool-controls">
-            <input id="aprs-loc" placeholder="CALLSIGN" />
+            <input id="aprs-loc" placeholder="KD4PMP" />
             <button onclick="invoke('/api/aprs/locations/' + document.getElementById('aprs-loc').value)">Query</button>
           </div>
         </div>
@@ -132,7 +132,7 @@
           <h3>APRS Weather</h3>
           <p>Retrieve weather station data.</p>
           <div class="tool-controls">
-            <input id="aprs-wx" placeholder="CALLSIGN" />
+            <input id="aprs-wx" placeholder="KD4PMP" />
             <button onclick="invoke('/api/aprs/weather/' + document.getElementById('aprs-wx').value)">Query</button>
           </div>
         </div>

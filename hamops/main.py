@@ -32,7 +32,7 @@ from .middleware import RequestLogMiddleware
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-API_KEY = os.getenv("API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 def create_app() -> FastAPI:
@@ -65,8 +65,8 @@ def create_app() -> FastAPI:
     api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 
     def require_api_key(x_api_key: str = Depends(api_key_header)) -> None:
-        """Validate the ``x-api-key`` header against ``API_KEY``."""
-        if API_KEY and x_api_key != API_KEY:
+        """Validate the ``x-api-key`` header against ``OPENAI_API_KEY``."""
+        if OPENAI_API_KEY and x_api_key != OPENAI_API_KEY:
             raise HTTPException(status_code=401, detail="Missing or invalid API key")
 
     # -----------------------------------------------------------------------
