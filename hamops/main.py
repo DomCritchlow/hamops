@@ -69,7 +69,7 @@ def create_app() -> FastAPI:
         return {"ok": True}
 
     @app.get("/api/callsign/{callsign}", operation_id="callsign_lookup")
-    async def rest_callsign(callsign: str, _=Depends(require_api_key)):
+    async def rest_callsign(callsign: str):
         rec = await lookup_callsign(callsign)
         if not rec:
             raise HTTPException(status_code=404, detail="Callsign not found")
