@@ -3,6 +3,8 @@
 Hamops is a small FastAPI service with an MCP (Model Context Protocol) server. It
 is meant to grow into a library of amateur‑radio utilities exposed over HTTP.
 
+[Hamops deployed](https://hamops-uiggriujca-uc.a.run.app/)
+
 ## Available Services
 
 ### Callsign Lookup
