@@ -24,9 +24,11 @@ is meant to grow into a library of amateur‑radio utilities exposed over HTTP.
 
 ## Web Interface
 
-The root endpoint (`/`) serves a minimal single‑page app that works on desktop
-and mobile browsers. It provides a form for callsign lookups and displays the
-JSON response from the service.
+The root endpoint (`/`) serves a simple single‑column interface that works on
+desktop and mobile browsers. Each tool accepts a callsign query and shows the
+JSON response inline with a loading indicator. The current tools cover
+HamDB callsign lookups and APRS location and weather data from aprs.fi. A band
+plan viewer is coming soon.
 
 ## API Usage
 
