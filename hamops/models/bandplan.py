@@ -1,7 +1,5 @@
 """Pydantic models for band plan data.
 
-This file should be saved as: hamops/models/bandplan.py
-
 This module defines data structures for amateur radio band plans,
 including frequency allocations, modes, and license privileges.
 """
