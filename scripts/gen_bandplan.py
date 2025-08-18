@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Script to fetch and process US band plan data from SDR-Band-Plans repo.
 
-This file should be saved as: scripts/gen_bandplan.py
-
 This script fetches the US Amateur Radio band plan XML from the GitHub repo
 and converts it to a structured JSON format for efficient querying.
 """

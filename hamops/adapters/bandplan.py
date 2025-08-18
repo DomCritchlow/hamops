@@ -1,7 +1,4 @@
-"""Band plan adapter for querying US amateur radio frequency allocations.
-
-This file should be saved as: hamops/adapters/bandplan.py
-"""
+"""Band plan adapter for querying US amateur radio frequency allocations."""
 
 from __future__ import annotations
 
