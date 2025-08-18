@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HamOps – Modern Amateur Radio API & MCP Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/web/logo.svg">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #0066cc;
+      --primary-dark: #0052a3;
+      --primary-light: #e6f2ff;
+      --secondary: #6b46c1;
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --surface-hover: #f1f5f9;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-hover: #334155;
+        --text: #f1f5f9;
+        --text-muted: #94a3b8;
+        --text-light: #64748b;
+        --border: #334155;
+        --primary-light: #1e3a5f;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+        --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4), 0 4px 6px -2px rgba(0,0,0,0.2);
+      }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      transition: var(--transition);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      header {
+        background: rgba(15,23,42,0.8);
+      }
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .logo img {
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .logo img {
+        filter: invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .nav-link:hover {
+      color: var(--primary);
+    }
+
+    .github-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--surface);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .github-link:hover {
+      background: var(--surface-hover);
+    }
+
+    /* Hero Section */
+    .hero {
+      margin-top: 65px;
+      padding: 4rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary-light) 0%, transparent 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -25%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+      opacity: 0.1;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+
+    .hero-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      max-width: 700px;
+      line-height: 1.7;
+    }
+
+    .feature-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .badge-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      cursor: pointer;
+      border: none;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Main Content */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .section-description {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Service Grid */
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .service-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .service-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .service-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .service-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .service-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .service-description {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .service-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input {
+      flex: 1;
+      padding: 0.625rem 0.875rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+
+    select.input {
+      cursor: pointer;
+    }
+
+    .btn-action {
+      padding: 0.625rem 1.25rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .result-container {
+      margin-top: 1rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .result-container.active {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .result-content {
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text-muted);
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Stats Section */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin: 4rem 0;
+      padding: 2rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Info Cards */
+    .info-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+
+    .info-card {
+      padding: 1.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .info-card h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .info-card code {
+      background: var(--bg);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.8125rem;
+      font-family: 'Monaco', 'Menlo', monospace;
+      color: var(--primary);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 3rem 1.5rem;
+      margin-top: 4rem;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+
+    .footer-section h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .footer-links a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 2rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 3rem 1rem;
+      }
+
+      .service-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .service-info {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <img src="/web/logo.svg" alt="HamOps" />
+        <span>HamOps</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#services" class="nav-link">Services</a>
+        <a href="#api" class="nav-link">API</a>
+        <a href="#mcp" class="nav-link">MCP</a>
+        <a href="/docs" class="nav-link">Documentation</a>
+        <a href="https://github.com/domcritchlow/hamops" class="github-link">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Modern Amateur Radio APIs with MCP Integration</h1>
+      <p class="hero-subtitle">
+        Access comprehensive ham radio data through REST APIs and Model Context Protocol. 
+        Query callsigns, APRS data, and US band plans with intelligent frequency parsing and rich metadata.
+      </p>
+      <div class="feature-badges">
+        <div class="badge">
+          <span class="badge-icon">📡</span>
+          <span>Real-time APRS</span>
+        </div>
+        <div class="badge">
+          <span class="badge-icon">🔍</span>
+          <span>Callsign Lookup</span>
+        </div>
+        <div class="badge">
+          <span class="badge-icon">📊</span>
+          <span>Band Plan Database</span>
+        </div>
+        <div class="badge">
+          <span class="badge-icon">🤖</span>
+          <span>MCP Ready</span>
+        </div>
+        <div class="badge">
+          <span class="badge-icon">⚡</span>
+          <span>FastAPI Powered</span>
+        </div>
+      </div>
+      <div class="cta-buttons">
+        <a href="/docs" class="btn btn-primary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M9.5 3L8.5 2v12l1-1V3zm3 0l-1-1v12l1-1V3zM5.5 3L4.5 2v12l1-1V3z"/>
+          </svg>
+          API Documentation
+        </a>
+        <a href="#services" class="btn btn-secondary">
+          Try Live Demo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-value">8+</div>
+        <div class="stat-label">API Endpoints</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1000+</div>
+        <div class="stat-label">Band Segments</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">MCP</div>
+        <div class="stat-label">AI Ready</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Data Sources</div>
+      </div>
+    </div>
+
+    <!-- Services Section -->
+    <section id="services">
+      <div class="section-header">
+        <h2 class="section-title">Interactive Services</h2>
+        <p class="section-description">
+          Test our APIs directly from your browser. All services are available via REST and MCP protocols.
+        </p>
+      </div>
+
+      <div class="service-grid">
+        <!-- Callsign Lookup -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">📻</div>
+            <h3 class="service-title">Callsign Lookup</h3>
+          </div>
+          <p class="service-description">
+            Look up amateur radio operator information from the HamDB database. Get license class, location, and expiration details.
+          </p>
+          <div class="service-controls">
+            <div class="input-group">
+              <input type="text" class="input" id="callsign-input" placeholder="KK4ZMR" />
+              <button class="btn-action" onclick="queryService('callsign')">Query</button>
+            </div>
+            <p class="service-info">API: GET /api/callsign/{callsign}</p>
+          </div>
+          <div class="result-container" id="callsign-result"></div>
+        </div>
+
+        <!-- APRS Location -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">📍</div>
+            <h3 class="service-title">APRS Locations</h3>
+          </div>
+          <p class="service-description">
+            Track real-time position reports from APRS-enabled stations. View location history, speed, altitude, and path information.
+          </p>
+          <div class="service-controls">
+            <div class="input-group">
+              <input type="text" class="input" id="aprs-location-input" placeholder="KD4PMP" />
+              <button class="btn-action" onclick="queryService('aprs-location')">Track</button>
+            </div>
+            <p class="service-info">API: GET /api/aprs/locations/{callsign}</p>
+          </div>
+          <div class="result-container" id="aprs-location-result"></div>
+        </div>
+
+        <!-- APRS Weather -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">🌤️</div>
+            <h3 class="service-title">APRS Weather</h3>
+          </div>
+          <p class="service-description">
+            Get current weather conditions from APRS weather stations. Temperature, humidity, wind, pressure, and precipitation data.
+          </p>
+          <div class="service-controls">
+            <div class="input-group">
+              <input type="text" class="input" id="aprs-weather-input" placeholder="KD4PMP" />
+              <button class="btn-action" onclick="queryService('aprs-weather')">Get Weather</button>
+            </div>
+            <p class="service-info">API: GET /api/aprs/weather/{callsign}</p>
+          </div>
+          <div class="result-container" id="aprs-weather-result"></div>
+        </div>
+
+        <!-- Band at Frequency -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">📊</div>
+            <h3 class="service-title">Band at Frequency</h3>
+          </div>
+          <p class="service-description">
+            Find band allocations, modes, and license privileges at any frequency. Supports MHz, kHz, and Hz with smart parsing.
+          </p>
+          <div class="service-controls">
+            <div class="input-group">
+              <input type="text" class="input" id="band-frequency-input" placeholder="14.225 MHz" />
+              <button class="btn-action" onclick="queryService('band-frequency')">Lookup</button>
+            </div>
+            <p class="service-info">API: GET /api/bands/frequency/{frequency}</p>
+          </div>
+          <div class="result-container" id="band-frequency-result"></div>
+        </div>
+
+        <!-- Search Bands -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">🔍</div>
+            <h3 class="service-title">Search Bands</h3>
+          </div>
+          <p class="service-description">
+            Search the US band plan by mode, band name, license class, or typical use. Find where you can operate.
+          </p>
+          <div class="service-controls">
+            <div class="input-group">
+              <select class="input" id="band-search-mode">
+                <option value="">Any Mode</option>
+                <option value="CW">CW</option>
+                <option value="USB">USB</option>
+                <option value="LSB">LSB</option>
+                <option value="FM">FM</option>
+                <option value="AM">AM</option>
+                <option value="DIGITAL">Digital</option>
+              </select>
+              <select class="input" id="band-search-license">
+                <option value="">Any License</option>
+                <option value="Technician">Technician</option>
+                <option value="General">General</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Extra">Extra</option>
+              </select>
+              <button class="btn-action" onclick="queryService('band-search')">Search</button>
+            </div>
+            <p class="service-info">API: GET /api/bands/search</p>
+          </div>
+          <div class="result-container" id="band-search-result"></div>
+        </div>
+
+        <!-- Bands in Range -->
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-icon">📡</div>
+            <h3 class="service-title">Bands in Range</h3>
+          </div>
+          <p class="service-description">
+            Find all band allocations within a frequency range. Perfect for exploring what's available in specific spectrum segments.
+          </p>
+          <div class="service-controls">
+            <input type="text" class="input" id="band-range-start" placeholder="Start: 14 MHz" />
+            <input type="text" class="input" id="band-range-end" placeholder="End: 14.350 MHz" />
+            <div class="input-group">
+              <button class="btn-action" onclick="queryService('band-range')">Find Bands</button>
+            </div>
+            <p class="service-info">API: GET /api/bands/range/{start}/{end}</p>
+          </div>
+          <div class="result-container" id="band-range-result"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCP Section -->
+    <section id="mcp">
+      <div class="section-header">
+        <h2 class="section-title">Model Context Protocol Integration</h2>
+        <p class="section-description">
+          Connect AI assistants directly to ham radio data through MCP, enabling natural language queries and intelligent responses.
+        </p>
+      </div>
+
+      <div class="info-cards">
+        <div class="info-card">
+          <h3>
+            <span>🤖</span> AI-Ready Operations
+          </h3>
+          <p>
+            All endpoints are exposed through MCP at <code>/mcp</code>, allowing AI assistants to query ham radio data using natural language. 
+            Ask questions like "What privileges do I have at 14.225 MHz?" or "Find CW frequencies for General class operators."
+          </p>
+        </div>
+        <div class="info-card">
+          <h3>
+            <span>⚡</span> FastAPI Foundation
+          </h3>
+          <p>
+            Built on FastAPI for high performance and automatic OpenAPI documentation. Access interactive docs at <code>/docs</code> 
+            with full schema definitions, try-it-out functionality, and code examples in multiple languages.
+          </p>
+        </div>
+        <div class="info-card">
+          <h3>
+            <span>🔧</span> Easy Integration
+          </h3>
+          <p>
+            Simple REST APIs with optional API key authentication. Deploy on any platform supporting Python, 
+            including Docker, Google Cloud Run, or traditional servers. Full CORS support for browser-based applications.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Section -->
+    <section id="api">
+      <div class="section-header">
+        <h2 class="section-title">API Overview</h2>
+        <p class="section-description">
+          RESTful endpoints with consistent JSON responses. Optional API key authentication for production deployments.
+        </p>
+      </div>
+
+      <div class="info-cards">
+        <div class="info-card">
+          <h3>
+            <span>📡</span> Data Sources
+          </h3>
+          <p>
+            • <strong>HamDB.org</strong> - FCC amateur radio license database<br>
+            • <strong>APRS.fi</strong> - Real-time APRS network data<br>
+            • <strong>SDR-Band-Plans</strong> - Comprehensive US frequency allocations<br>
+            <br>
+            All data is fetched in real-time or cached locally for optimal performance.
+          </p>
+        </div>
+        <div class="info-card">
+          <h3>
+            <span>🔑</span> Authentication
+          </h3>
+          <p>
+            Optional API key authentication via <code>x-api-key</code> header. 
+            Set <code>OPENAI_API_KEY</code> environment variable to enable. 
+            Perfect for rate limiting and access control in production environments.
+          </p>
+        </div>
+        <div class="info-card">
+          <h3>
+            <span>📊</span> Band Plan Features
+          </h3>
+          <p>
+            • Smart frequency parsing (MHz, kHz, Hz)<br>
+            • License class privileges mapping<br>
+            • Mode and use case indexing<br>
+            • Over 1000 band segments<br>
+            • Efficient binary search algorithms
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <div class="footer-links">
+          <a href="/docs">API Documentation</a>
+          <a href="https://github.com/yourusername/hamops">GitHub Repository</a>
+          <a href="/api">Service Status</a>
+          <a href="/health">Health Check</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h4>Data Sources</h4>
+        <div class="footer-links">
+          <a href="http://api.hamdb.org" target="_blank">HamDB.org</a>
+          <a href="https://aprs.fi" target="_blank">APRS.fi</a>
+          <a href="https://github.com/Arrin-KN1E/SDR-Band-Plans" target="_blank">SDR Band Plans</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h4>Technologies</h4>
+        <div class="footer-links">
+          <a href="https://fastapi.tiangolo.com" target="_blank">FastAPI</a>
+          <a href="https://www.anthropic.com/mcp" target="_blank">MCP Protocol</a>
+          <a href="https://www.python.org" target="_blank">Python 3.11+</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h4>Deploy</h4>
+        <div class="footer-links">
+          <a href="https://www.docker.com" target="_blank">Docker</a>
+          <a href="https://cloud.google.com/run" target="_blank">Google Cloud Run</a>
+          <a href="https://www.uvicorn.org" target="_blank">Uvicorn</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 HamOps. Open source under MIT License.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Service configurations
+    const services = {
+      'callsign': {
+        endpoint: (input) => `/api/callsign/${input}`,
+        inputId: 'callsign-input',
+        resultId: 'callsign-result'
+      },
+      'aprs-location': {
+        endpoint: (input) => `/api/aprs/locations/${input}`,
+        inputId: 'aprs-location-input',
+        resultId: 'aprs-location-result'
+      },
+      'aprs-weather': {
+        endpoint: (input) => `/api/aprs/weather/${input}`,
+        inputId: 'aprs-weather-input',
+        resultId: 'aprs-weather-result'
+      },
+      'band-frequency': {
+        endpoint: (input) => `/api/bands/frequency/${encodeURIComponent(input)}`,
+        inputId: 'band-frequency-input',
+        resultId: 'band-frequency-result'
+      },
+      'band-search': {
+        endpoint: () => {
+          const mode = document.getElementById('band-search-mode').value;
+          const license = document.getElementById('band-search-license').value;
+          const params = new URLSearchParams();
+          if (mode) params.append('mode', mode);
+          if (license) params.append('license_class', license);
+          return `/api/bands/search?${params.toString()}`;
+        },
+        resultId: 'band-search-result',
+        noInput: true
+      },
+      'band-range': {
+        endpoint: () => {
+          const start = document.getElementById('band-range-start').value;
+          const end = document.getElementById('band-range-end').value;
+          if (!start || !end) {
+            throw new Error('Please enter both start and end frequencies');
+          }
+          return `/api/bands/range/${encodeURIComponent(start)}/${encodeURIComponent(end)}`;
+        },
+        resultId: 'band-range-result',
+        noInput: true
+      }
+    };
+
+    async function queryService(serviceId) {
+      const service = services[serviceId];
+      const resultContainer = document.getElementById(service.resultId);
+      
+      try {
+        // Get input value
+        let endpoint;
+        if (service.noInput) {
+          endpoint = service.endpoint();
+        } else {
+          const input = document.getElementById(service.inputId).value;
+          if (!input) {
+            showError(resultContainer, 'Please enter a value');
+            return;
+          }
+          endpoint = service.endpoint(input);
+        }
+
+        // Show loading
+        showLoading(resultContainer);
+
+        // Make request
+        const response = await fetch(endpoint);
+        const data = await response.json();
+
+        // Show result
+        showResult(resultContainer, data);
+      } catch (error) {
+        showError(resultContainer, error.message || 'Error fetching data');
+      }
+    }
+
+    function showLoading(container) {
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+      container.classList.add('active');
+    }
+
+    function showResult(container, data) {
+      container.innerHTML = `<div class="result-content">${JSON.stringify(data, null, 2)}</div>`;
+      container.classList.add('active');
+    }
+
+    function showError(container, message) {
+      container.innerHTML = `<div class="result-content" style="color: var(--error);">Error: ${message}</div>`;
+      container.classList.add('active');
+    }
+
+    // Smooth scroll for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Add fade-in animation to cards on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.service-card, .info-card').forEach(card => {
+      observer.observe(card);
+    });
+
+    // Enter key support for inputs
+    document.querySelectorAll('.input').forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const button = input.parentElement.querySelector('.btn-action') || 
+                        input.parentElement.parentElement.querySelector('.btn-action');
+          if (button) button.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
