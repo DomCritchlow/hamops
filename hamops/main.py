@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import os
 from importlib import resources
+from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import APIKeyHeader
@@ -26,6 +27,7 @@ from .adapters.aprs import (
     get_aprs_weather,
     get_aprs_messages,
 )
+from .adapters.bandplan import get_bandplan_adapter
 from .middleware import RequestLogMiddleware
 
 
@@ -166,6 +168,162 @@ def create_app() -> FastAPI:
         return JSONResponse({"records": [rec.model_dump() for rec in records]})
 
     # -----------------------------------------------------------------------
+    # Band Plan Routes
+    # -----------------------------------------------------------------------
+    @app.get(
+        "/api/bands/frequency/{frequency}",
+        operation_id="band_at_frequency",
+        tags=["Band Plan"],
+    )
+    async def rest_band_at_frequency(frequency: str) -> JSONResponse:
+        """Get band information for a specific frequency.
+
+        The frequency parameter can be in various formats:
+        - "14.225 MHz" or "14.225MHz"
+        - "14225 kHz" or "14225kHz"
+        - "14225000 Hz" or "14225000"
+        - "14.225" (assumes MHz if has decimal)
+
+        Returns information about what bands, modes, and privileges
+        are available at the specified frequency.
+        """
+        adapter = get_bandplan_adapter()
+        freq_hz = adapter.parse_frequency(frequency)
+        
+        if freq_hz is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid frequency format: {frequency}"
+            )
+        
+        info = adapter.get_frequency_info(freq_hz)
+        return JSONResponse({"record": info.model_dump()})
+
+    @app.get(
+        "/api/bands/search",
+        operation_id="search_bands",
+        tags=["Band Plan"],
+    )
+    async def rest_search_bands(
+        mode: Optional[str] = Query(None, description="Filter by mode (e.g., CW, USB, FM)"),
+        band_name: Optional[str] = Query(None, description="Filter by band name (e.g., 20m, 2m, 70cm)"),
+        license_class: Optional[str] = Query(None, description="Filter by license class (e.g., General, Extra)"),
+        typical_use: Optional[str] = Query(None, description="Filter by typical use (e.g., Phone, Digital, Satellite)"),
+        min_frequency: Optional[str] = Query(None, description="Minimum frequency (with units)"),
+        max_frequency: Optional[str] = Query(None, description="Maximum frequency (with units)"),
+    ) -> JSONResponse:
+        """Search for band segments matching specified criteria.
+
+        All parameters are optional. Frequencies can be specified with units
+        (e.g., "14 MHz", "144.200 MHz", "146520 kHz").
+
+        Returns a list of band segments matching the search criteria.
+        """
+        adapter = get_bandplan_adapter()
+        
+        # Parse frequency bounds if provided
+        min_freq_hz = None
+        max_freq_hz = None
+        
+        if min_frequency:
+            min_freq_hz = adapter.parse_frequency(min_frequency)
+            if min_freq_hz is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid minimum frequency format: {min_frequency}"
+                )
+        
+        if max_frequency:
+            max_freq_hz = adapter.parse_frequency(max_frequency)
+            if max_freq_hz is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid maximum frequency format: {max_frequency}"
+                )
+        
+        result = adapter.search_bands(
+            mode=mode,
+            band_name=band_name,
+            license_class=license_class,
+            typical_use=typical_use,
+            min_freq=min_freq_hz,
+            max_freq=max_freq_hz,
+        )
+        
+        return JSONResponse({"record": result.model_dump()})
+
+    @app.get(
+        "/api/bands/range/{start_frequency}/{end_frequency}",
+        operation_id="bands_in_range",
+        tags=["Band Plan"],
+    )
+    async def rest_bands_in_range(
+        start_frequency: str,
+        end_frequency: str,
+    ) -> JSONResponse:
+        """Get all band segments within a frequency range.
+
+        Frequencies can be specified with units (e.g., "14 MHz", "14.350 MHz").
+
+        Returns all band segments that overlap with the specified range.
+        """
+        adapter = get_bandplan_adapter()
+        
+        start_hz = adapter.parse_frequency(start_frequency)
+        if start_hz is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid start frequency format: {start_frequency}"
+            )
+        
+        end_hz = adapter.parse_frequency(end_frequency)
+        if end_hz is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid end frequency format: {end_frequency}"
+            )
+        
+        if start_hz > end_hz:
+            raise HTTPException(
+                status_code=400,
+                detail="Start frequency must be less than end frequency"
+            )
+        
+        bands = adapter.get_bands_in_range(start_hz, end_hz)
+        return JSONResponse({
+            "range": {
+                "start": start_hz,
+                "end": end_hz,
+                "startMHz": start_hz / 1_000_000,
+                "endMHz": end_hz / 1_000_000,
+            },
+            "count": len(bands),
+            "bands": [band.model_dump() for band in bands],
+        })
+
+    @app.get(
+        "/api/bands/summary",
+        operation_id="band_plan_summary",
+        tags=["Band Plan"],
+    )
+    async def rest_band_plan_summary() -> JSONResponse:
+        """Get summary information about the loaded band plan.
+
+        Returns metadata about the band plan including version, source,
+        available bands, modes, and frequency coverage.
+        """
+        adapter = get_bandplan_adapter()
+        summary = adapter.get_summary()
+        
+        if not summary:
+            raise HTTPException(
+                status_code=503,
+                detail="Band plan data not loaded. Run scripts/gen_bandplan.py"
+            )
+        
+        return JSONResponse({"record": summary.model_dump()})
+
+    # -----------------------------------------------------------------------
     # MCP server mount
     # -----------------------------------------------------------------------
     # Include all operation identifiers so they are exposed over the MCP server
@@ -176,6 +334,10 @@ def create_app() -> FastAPI:
             "aprs_locations",
             "aprs_weather",
             "aprs_messages",
+            "band_at_frequency",
+            "search_bands",
+            "bands_in_range",
+            "band_plan_summary",
         ],
     )
     mcp.mount()

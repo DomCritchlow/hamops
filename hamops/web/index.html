@@ -39,8 +39,10 @@
     .feature:last-child { border-bottom: none; }
     .feature h3 { margin: 0 0 0.25rem; }
     .feature p { margin: 0.25rem 0 0; color: var(--muted); }
-    .controls { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    input { flex: 1; padding: 0.5rem; font-size: 1rem; }
+    .controls { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .controls-row { display: flex; gap: 0.5rem; width: 100%; }
+    input { flex: 1; padding: 0.5rem; font-size: 1rem; min-width: 0; }
+    select { padding: 0.5rem; font-size: 1rem; min-width: 120px; }
     button {
       padding: 0.5rem 1rem;
       font-size: 1rem;
@@ -51,7 +53,7 @@
       cursor: pointer;
     }
     .result { margin-top: 1rem; }
-    pre { background: #f0f0f0; padding: 1rem; overflow-x: auto; }
+    pre { background: #f0f0f0; padding: 1rem; overflow-x: auto; border-radius: 4px; }
     .spinner {
       width: 24px; height: 24px;
       border: 3px solid var(--accent);
@@ -62,6 +64,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     footer { font-size: 0.875rem; color: var(--muted); text-align: center; padding: 2rem 0; }
+    .info { font-size: 0.875rem; color: var(--muted); margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -96,9 +99,34 @@
         endpoint: v => `/api/aprs/weather/${v}`,
       },
       {
-        id: 'band-plan',
-        title: 'Band Plan',
-        description: 'Explore amateur radio band allocations (coming soon).',
+        id: 'band-frequency',
+        title: 'Band at Frequency',
+        description: 'Find what band, modes, and privileges are available at a specific frequency.',
+        placeholder: '14.225 MHz',
+        endpoint: v => `/api/bands/frequency/${encodeURIComponent(v)}`,
+        info: 'Enter frequency with units (e.g., "14.225 MHz", "146.52 MHz", "146520 kHz")'
+      },
+      {
+        id: 'band-search',
+        title: 'Search Bands',
+        description: 'Search for band segments by mode, license class, or use.',
+        type: 'search',
+        endpoint: params => {
+          const query = new URLSearchParams();
+          if (params.mode) query.append('mode', params.mode);
+          if (params.band_name) query.append('band_name', params.band_name);
+          if (params.license_class) query.append('license_class', params.license_class);
+          if (params.typical_use) query.append('typical_use', params.typical_use);
+          return `/api/bands/search?${query.toString()}`;
+        }
+      },
+      {
+        id: 'band-range',
+        title: 'Bands in Range',
+        description: 'Find all band allocations within a frequency range.',
+        type: 'range',
+        endpoint: (start, end) => `/api/bands/range/${encodeURIComponent(start)}/${encodeURIComponent(end)}`,
+        info: 'Enter frequencies with units (e.g., "14 MHz" to "14.350 MHz")'
       },
     ];
 
@@ -106,15 +134,67 @@
     for (const f of features) {
       const row = document.createElement('div');
       row.className = 'feature';
-      row.innerHTML = `
-        <h3>${f.title}</h3>
-        <p>${f.description}</p>
-        ${f.endpoint ? `
+      
+      let controlsHTML = '';
+      if (f.type === 'search') {
+        controlsHTML = `
+          <div class="controls">
+            <div class="controls-row">
+              <select id="${f.id}-mode">
+                <option value="">Any Mode</option>
+                <option value="CW">CW</option>
+                <option value="USB">USB</option>
+                <option value="LSB">LSB</option>
+                <option value="FM">FM</option>
+                <option value="AM">AM</option>
+              </select>
+              <select id="${f.id}-band">
+                <option value="">Any Band</option>
+                <option value="160m">160m</option>
+                <option value="80m">80m</option>
+                <option value="40m">40m</option>
+                <option value="20m">20m</option>
+                <option value="15m">15m</option>
+                <option value="10m">10m</option>
+                <option value="6m">6m</option>
+                <option value="2m">2m</option>
+                <option value="70cm">70cm</option>
+              </select>
+              <select id="${f.id}-license">
+                <option value="">Any License</option>
+                <option value="Technician">Technician</option>
+                <option value="General">General</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Extra">Extra</option>
+              </select>
+              <button data-id="${f.id}" data-type="search">Search</button>
+            </div>
+          </div>
+        `;
+      } else if (f.type === 'range') {
+        controlsHTML = `
+          <div class="controls">
+            <div class="controls-row">
+              <input id="${f.id}-start" placeholder="Start (e.g., 14 MHz)" />
+              <input id="${f.id}-end" placeholder="End (e.g., 14.350 MHz)" />
+              <button data-id="${f.id}" data-type="range">Query</button>
+            </div>
+          </div>
+        `;
+      } else if (f.endpoint) {
+        controlsHTML = `
           <div class="controls">
             <input id="${f.id}-input" placeholder="${f.placeholder || ''}" />
             <button data-id="${f.id}">Query</button>
           </div>
-        ` : ''}
+        `;
+      }
+      
+      row.innerHTML = `
+        <h3>${f.title}</h3>
+        <p>${f.description}</p>
+        ${f.info ? `<p class="info">${f.info}</p>` : ''}
+        ${controlsHTML}
         <div class="result" id="${f.id}-result"></div>
       `;
       app.appendChild(row);
@@ -123,20 +203,45 @@
     app.addEventListener('click', async (e) => {
       if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
         const id = e.target.dataset.id;
+        const type = e.target.dataset.type;
         const feature = features.find((f) => f.id === id);
-        const input = document.getElementById(`${id}-input`);
         const result = document.getElementById(`${id}-result`);
         result.innerHTML = '<div class="spinner"></div>';
+        
         try {
-          const resp = await fetch(feature.endpoint(input.value));
+          let url;
+          if (type === 'search') {
+            const params = {
+              mode: document.getElementById(`${id}-mode`).value,
+              band_name: document.getElementById(`${id}-band`).value,
+              license_class: document.getElementById(`${id}-license`).value,
+            };
+            url = feature.endpoint(params);
+          } else if (type === 'range') {
+            const start = document.getElementById(`${id}-start`).value;
+            const end = document.getElementById(`${id}-end`).value;
+            if (!start || !end) {
+              result.textContent = 'Please enter both start and end frequencies';
+              return;
+            }
+            url = feature.endpoint(start, end);
+          } else {
+            const input = document.getElementById(`${id}-input`);
+            if (!input.value) {
+              result.textContent = 'Please enter a value';
+              return;
+            }
+            url = feature.endpoint(input.value);
+          }
+          
+          const resp = await fetch(url);
           const data = await resp.json();
           result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
         } catch (err) {
-          result.textContent = 'Error fetching data';
+          result.textContent = 'Error fetching data: ' + err.message;
         }
       }
     });
   </script>
 </body>
 </html>
-

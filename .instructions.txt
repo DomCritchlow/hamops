@@ -1,0 +1,70 @@
+hamops/
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── README.md                      # [UPDATE] Replace with updated version
+├── cloudbuild.yaml
+├── requirements.txt
+├── setup.sh                       # [NEW] Setup script for band plan data
+├── scripts/                       # [NEW] Scripts directory
+│   └── gen_bandplan.py           # [NEW] Band plan generation script
+├── hamops/
+│   ├── __init__.py
+│   ├── main.py                   # [UPDATE] Replace with updated version
+│   ├── data/                     # [NEW] Data directory (created by script)
+│   │   └── us_bandplan.json     # [GENERATED] Generated band plan data
+│   ├── adapters/
+│   │   ├── __init__.py          # [UPDATE] Replace with updated version
+│   │   ├── aprs.py
+│   │   ├── bandplan.py          # [NEW] Band plan adapter
+│   │   └── callsign.py
+│   ├── middleware/
+│   │   ├── __init__.py
+│   │   └── logging.py
+│   ├── models/
+│   │   ├── __init__.py          # [UPDATE] Replace with updated version
+│   │   ├── aprs.py
+│   │   ├── bandplan.py          # [NEW] Band plan models
+│   │   └── callsign.py
+│   └── web/
+│       ├── index.html           # [UPDATE] Replace with updated version
+│       └── logo.svg
+```
+
+## Setup Instructions
+
+1. Create the new directories:
+   ```bash
+   mkdir -p scripts
+   mkdir -p hamops/data
+   ```
+
+2. Add the new files:
+   - Save `gen_bandplan.py` to `scripts/gen_bandplan.py`
+   - Save `bandplan.py` (models) to `hamops/models/bandplan.py`
+   - Save `bandplan.py` (adapter) to `hamops/adapters/bandplan.py`
+   - Save `setup.sh` to the project root
+
+3. Replace the updated files:
+   - Replace `hamops/main.py` with the updated version
+   - Replace `hamops/adapters/__init__.py` with the updated version
+   - Replace `hamops/models/__init__.py` with the updated version
+   - Replace `hamops/web/index.html` with the updated version
+   - Replace `README.md` with the updated version
+
+4. Make the setup script executable and run it:
+   ```bash
+   chmod +x setup.sh
+   ./setup.sh
+   ```
+
+   Or run the generation script directly:
+   ```bash
+   python scripts/gen_bandplan.py
+   ```
+
+5. Start the server:
+   ```bash
+   uvicorn hamops.main:app --reload
+   ```
