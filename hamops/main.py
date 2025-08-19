@@ -13,7 +13,7 @@ import os
 from importlib import resources
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import APIKeyHeader
@@ -99,6 +99,38 @@ def create_app() -> FastAPI:
     def health():
         """Health check endpoint."""
         return {"ok": True}
+
+    @app.post("/api/ask", tags=["MCP"])
+    async def rest_ask_mcp(
+        request: Request, payload: dict = Body(...)
+    ) -> JSONResponse:
+        """Query the MCP server using an OpenAI model.
+
+        Expects a JSON body with a ``question`` field. The question is sent to
+        the OpenAI Responses API with the HamOps MCP server registered as a
+        tool, allowing the model to invoke backend operations as needed.
+        """
+        question = payload.get("question")
+        if not question:
+            raise HTTPException(status_code=400, detail="Missing question")
+        if not OPENAI_API_KEY:
+            raise HTTPException(
+                status_code=500, detail="OpenAI API key not configured"
+            )
+        try:
+            from openai import OpenAI
+
+            client = OpenAI()
+            server_url = f"{request.base_url}mcp"
+            resp = client.responses.create(
+                model="gpt-4o-mini",
+                input=question,
+                extra_body={"mcp": {"servers": [{"url": server_url}]}}
+            )
+            answer = getattr(resp, "output_text", None)
+        except Exception as exc:  # pragma: no cover - external dependency
+            raise HTTPException(status_code=500, detail=f"MCP query failed: {exc}")
+        return JSONResponse({"question": question, "answer": answer})
 
     @app.get(
         "/api/callsign/{callsign}",

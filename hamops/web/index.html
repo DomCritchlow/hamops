@@ -72,7 +72,17 @@
     <img src="/web/logo.svg" alt="HamOps logo" />
     <h1>HamOps</h1>
   </header>
-  <main id="app"></main>
+  <main id="app">
+    <div class="feature" id="ask-section">
+      <h3>Ask HamOps</h3>
+      <p>Interact with the MCP-powered API using natural language.</p>
+      <div class="controls">
+        <input id="ask-input" placeholder="What band is 14.225 MHz?" />
+        <button id="ask-button">Ask</button>
+      </div>
+      <div class="result" id="ask-result"></div>
+    </div>
+  </main>
   <footer>&copy; 2025 HamOps</footer>
   <script>
     // Feature definitions for easy extension
@@ -201,13 +211,35 @@
     }
 
     app.addEventListener('click', async (e) => {
+      if (e.target.id === 'ask-button') {
+        const qInput = document.getElementById('ask-input');
+        const qResult = document.getElementById('ask-result');
+        if (!qInput.value) {
+          qResult.textContent = 'Please enter a question';
+          return;
+        }
+        qResult.innerHTML = '<div class="spinner"></div>';
+        try {
+          const resp = await fetch('/api/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: qInput.value })
+          });
+          const data = await resp.json();
+          qResult.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        } catch (err) {
+          qResult.textContent = 'Error: ' + err.message;
+        }
+        return;
+      }
+
       if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
         const id = e.target.dataset.id;
         const type = e.target.dataset.type;
         const feature = features.find((f) => f.id === id);
         const result = document.getElementById(`${id}-result`);
         result.innerHTML = '<div class="spinner"></div>';
-        
+
         try {
           let url;
           if (type === 'search') {
@@ -233,7 +265,7 @@
             }
             url = feature.endpoint(input.value);
           }
-          
+
           const resp = await fetch(url);
           const data = await resp.json();
           result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
