@@ -7,9 +7,8 @@ Protocol operations.  At startup, it constructs the FastAPI app via
 so that ASGI servers like Uvicorn can discover it automatically.
 """
 
-from __future__ import annotations
-
 import os
+from contextlib import asynccontextmanager
 from importlib import resources
 from typing import Optional
 
@@ -135,14 +134,21 @@ def create_app() -> FastAPI:
     mounted with the operation identifiers defined on the route
     decorators.
     """
-    app = FastAPI(title="Hamops")
-
-    app.mount("/web", StaticFiles(directory="hamops/web"), name="web")
     mcp = FastMCP(
         name="Hamops",
         instructions=MCP_SERVER_INSTRUCTIONS,
         streamable_http_path="/",
     )
+    mcp_app = mcp.streamable_http_app()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        async with mcp.session_manager.run():
+            yield
+
+    app = FastAPI(title="Hamops", lifespan=lifespan)
+
+    app.mount("/web", StaticFiles(directory="hamops/web"), name="web")
     # -----------------------------------------------------------------------
     # Middleware
     # -----------------------------------------------------------------------
@@ -195,7 +201,8 @@ def create_app() -> FastAPI:
         return {"ok": True}
 
     async def callsign_lookup_tool(
-        callsign: str, ctx: Context | None = None
+        callsign: str,
+        ctx: Context = None,
     ) -> CallsignLookupOutput:
         """Look up a callsign via the HamDB service.
 
@@ -229,7 +236,8 @@ def create_app() -> FastAPI:
     )
 
     async def aprs_locations_tool(
-        callsign: str, ctx: Context | None = None
+        callsign: str,
+        ctx: Context = None,
     ) -> APRSLocationsOutput:
         """Fetch all APRS location records for a callsign (base or extended).
 
@@ -263,7 +271,8 @@ def create_app() -> FastAPI:
     )
 
     async def aprs_weather_tool(
-        callsign: str, ctx: Context | None = None
+        callsign: str,
+        ctx: Context = None,
     ) -> APRSWeatherOutput:
         """Retrieve the latest weather report for an APRS weather station.
 
@@ -299,7 +308,8 @@ def create_app() -> FastAPI:
     )
 
     async def aprs_messages_tool(
-        callsign: str, ctx: Context | None = None
+        callsign: str,
+        ctx: Context = None,
     ) -> APRSMessagesOutput:
         """Fetch APRS text messages for a callsign (sent to or from).
 
@@ -336,7 +346,8 @@ def create_app() -> FastAPI:
     # Band Plan Routes
     # -----------------------------------------------------------------------
     async def band_at_frequency_tool(
-        frequency: str, ctx: Context | None = None
+        frequency: str,
+        ctx: Context = None,
     ) -> BandAtFrequencyOutput:
         """Get band information for a specific frequency.
 
@@ -378,7 +389,7 @@ def create_app() -> FastAPI:
         typical_use: Optional[str] = None,
         min_frequency: Optional[str] = None,
         max_frequency: Optional[str] = None,
-        ctx: Context | None = None,
+        ctx: Context = None,
     ) -> SearchBandsOutput:
         """Search for band segments matching specified criteria.
 
@@ -448,7 +459,7 @@ def create_app() -> FastAPI:
     async def bands_in_range_tool(
         start_frequency: str,
         end_frequency: str,
-        ctx: Context | None = None,
+        ctx: Context = None,
     ) -> BandsInRangeOutput:
         """Get all band segments within a frequency range.
 
@@ -505,7 +516,7 @@ def create_app() -> FastAPI:
     )
 
     async def band_plan_summary_tool(
-        ctx: Context | None = None,
+        ctx: Context = None,
     ) -> BandPlanSummaryOutput:
         """Get summary information about the loaded band plan.
 
@@ -542,7 +553,7 @@ def create_app() -> FastAPI:
     # -----------------------------------------------------------------------
     # MCP server mount
     # -----------------------------------------------------------------------
-    app.mount("/mcp", mcp.streamable_http_app())
+    app.mount("/mcp", mcp_app)
 
     return app
 
