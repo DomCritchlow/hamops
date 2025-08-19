@@ -17,9 +17,10 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import APIKeyHeader
-from mcp.server.fastmcp import FastMCP
 from fastapi.staticfiles import StaticFiles
-
+from mcp.server.fastmcp import FastMCP, Context
+from mcp.types import ToolAnnotations
+from pydantic import BaseModel, Field
 
 from .adapters.callsign import lookup_callsign
 from .adapters.aprs import (
@@ -29,12 +30,100 @@ from .adapters.aprs import (
 )
 from .adapters.bandplan import get_bandplan_adapter
 from .middleware import RequestLogMiddleware
+from .models import (
+    APRSLocationRecord,
+    APRSMessageRecord,
+    APRSWeatherRecord,
+    BandPlanSummary,
+    BandSearchResult,
+    BandSegment,
+    CallsignRecord,
+    FrequencyInfo,
+)
 
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+
+# Placeholder instructions describing the MCP server. Fill in version, contact
+# information, and any other global details relevant to clients.
+MCP_SERVER_INSTRUCTIONS = (
+    "TODO: add server version, contact information, capability flags, and other "
+    "high-level guidance for MCP clients."
+)
+
+
+# ---------------------------------------------------------------------------
+# MCP tool I/O models
+# ---------------------------------------------------------------------------
+
+
+class CallsignLookupOutput(BaseModel):
+    """Structured result for callsign lookups."""
+
+    record: CallsignRecord = Field(..., description="Normalized callsign data")
+
+
+class APRSLocationsOutput(BaseModel):
+    """Structured result for APRS location history."""
+
+    records: list[APRSLocationRecord] = Field(
+        ..., description="APRS location packets for the callsign"
+    )
+
+
+class APRSWeatherOutput(BaseModel):
+    """Structured result for APRS weather queries."""
+
+    record: APRSWeatherRecord = Field(
+        ..., description="Latest weather report for the station"
+    )
+
+
+class APRSMessagesOutput(BaseModel):
+    """Structured result for APRS message queries."""
+
+    records: list[APRSMessageRecord] = Field(
+        ..., description="APRS text messages to or from the callsign"
+    )
+
+
+class BandAtFrequencyOutput(BaseModel):
+    """Band information at a specific frequency."""
+
+    record: FrequencyInfo
+
+
+class SearchBandsOutput(BaseModel):
+    """Result of searching band segments."""
+
+    record: BandSearchResult
+
+
+class FrequencyRange(BaseModel):
+    """Frequency range used for band lookups."""
+
+    start: int
+    end: int
+    startMHz: float
+    endMHz: float
+
+
+class BandsInRangeOutput(BaseModel):
+    """Band segments within a frequency span."""
+
+    range: FrequencyRange
+    count: int
+    bands: list[BandSegment]
+
+
+class BandPlanSummaryOutput(BaseModel):
+    """Summary information about the loaded band plan."""
+
+    record: BandPlanSummary
 
 
 def create_app() -> FastAPI:
@@ -49,7 +138,11 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Hamops")
 
     app.mount("/web", StaticFiles(directory="hamops/web"), name="web")
-    mcp = FastMCP(name="Hamops", streamable_http_path="/")
+    mcp = FastMCP(
+        name="Hamops",
+        instructions=MCP_SERVER_INSTRUCTIONS,
+        streamable_http_path="/",
+    )
     # -----------------------------------------------------------------------
     # Middleware
     # -----------------------------------------------------------------------
@@ -101,16 +194,17 @@ def create_app() -> FastAPI:
         """Health check endpoint."""
         return {"ok": True}
 
-    async def callsign_lookup_tool(callsign: str) -> dict:
+    async def callsign_lookup_tool(
+        callsign: str, ctx: Context | None = None
+    ) -> CallsignLookupOutput:
         """Look up a callsign via the HamDB service.
 
-        Returns a JSON representation of the normalized callsign record or
-        raises a ``ValueError`` if the callsign is not found.
+        TODO: document rate limits, input examples, and expected error codes.
         """
         rec = await lookup_callsign(callsign)
         if not rec:
             raise ValueError("Callsign not found")
-        return {"record": rec.model_dump()}
+        return CallsignLookupOutput(record=rec)
 
     @app.get(
         "/api/callsign/{callsign}",
@@ -119,21 +213,32 @@ def create_app() -> FastAPI:
     )
     async def rest_callsign(callsign: str) -> JSONResponse:
         try:
-            return JSONResponse(await callsign_lookup_tool(callsign))
+            return JSONResponse((await callsign_lookup_tool(callsign)).model_dump())
         except ValueError:
             raise HTTPException(status_code=404, detail="Callsign not found")
 
-    mcp.add_tool(callsign_lookup_tool, name="callsign_lookup")
+    mcp.add_tool(
+        callsign_lookup_tool,
+        name="callsign_lookup",
+        title="Callsign Lookup",
+        description=(
+            "Retrieve normalized callsign details. TODO: add sample payloads and "
+            "rate-limit information."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True),
+    )
 
-    async def aprs_locations_tool(callsign: str) -> dict:
+    async def aprs_locations_tool(
+        callsign: str, ctx: Context | None = None
+    ) -> APRSLocationsOutput:
         """Fetch all APRS location records for a callsign (base or extended).
 
-        Returns a JSON-compatible dict or raises ``ValueError`` if no entries exist.
+        TODO: document units, data retention, and sample payloads.
         """
         records = await get_aprs_locations(callsign)
         if not records:
             raise ValueError("APRS station not found")
-        return {"records": [rec.model_dump() for rec in records]}
+        return APRSLocationsOutput(records=records)
 
     @app.get(
         "/api/aprs/locations/{callsign}",
@@ -142,21 +247,32 @@ def create_app() -> FastAPI:
     )
     async def rest_aprs_locations(callsign: str) -> JSONResponse:
         try:
-            return JSONResponse(await aprs_locations_tool(callsign))
+            return JSONResponse((await aprs_locations_tool(callsign)).model_dump())
         except ValueError:
             raise HTTPException(status_code=404, detail="APRS station not found")
 
-    mcp.add_tool(aprs_locations_tool, name="aprs_locations")
+    mcp.add_tool(
+        aprs_locations_tool,
+        name="aprs_locations",
+        title="APRS Location History",
+        description=(
+            "Fetch recent APRS position packets for a callsign. TODO: document "
+            "units and retention period."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True),
+    )
 
-    async def aprs_weather_tool(callsign: str) -> dict:
+    async def aprs_weather_tool(
+        callsign: str, ctx: Context | None = None
+    ) -> APRSWeatherOutput:
         """Retrieve the latest weather report for an APRS weather station.
 
-        Returns a JSON-compatible dict or raises ``ValueError`` if not found.
+        TODO: include units of measure, rate limits, and example payloads.
         """
         record = await get_aprs_weather(callsign)
         if not record:
             raise ValueError("APRS weather station not found")
-        return {"record": record.model_dump()}
+        return APRSWeatherOutput(record=record)
 
     @app.get(
         "/api/aprs/weather/{callsign}",
@@ -165,20 +281,34 @@ def create_app() -> FastAPI:
     )
     async def rest_aprs_weather(callsign: str) -> JSONResponse:
         try:
-            return JSONResponse(await aprs_weather_tool(callsign))
+            return JSONResponse((await aprs_weather_tool(callsign)).model_dump())
         except ValueError:
             raise HTTPException(
                 status_code=404, detail="APRS weather station not found"
             )
 
-    mcp.add_tool(aprs_weather_tool, name="aprs_weather")
+    mcp.add_tool(
+        aprs_weather_tool,
+        name="aprs_weather",
+        title="APRS Weather",
+        description=(
+            "Get the latest APRS weather report for a station. TODO: document "
+            "units of measure and expected update frequency."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True),
+    )
 
-    async def aprs_messages_tool(callsign: str) -> dict:
-        """Fetch APRS text messages for a callsign (sent to or from)."""
+    async def aprs_messages_tool(
+        callsign: str, ctx: Context | None = None
+    ) -> APRSMessagesOutput:
+        """Fetch APRS text messages for a callsign (sent to or from).
+
+        TODO: specify retention policies and sample message formats.
+        """
         records = await get_aprs_messages(callsign)
         if not records:
             raise ValueError("No APRS messages found")
-        return {"records": [rec.model_dump() for rec in records]}
+        return APRSMessagesOutput(records=records)
 
     @app.get(
         "/api/aprs/messages/{callsign}",
@@ -187,26 +317,37 @@ def create_app() -> FastAPI:
     )
     async def rest_aprs_messages(callsign: str) -> JSONResponse:
         try:
-            return JSONResponse(await aprs_messages_tool(callsign))
+            return JSONResponse((await aprs_messages_tool(callsign)).model_dump())
         except ValueError:
             raise HTTPException(status_code=404, detail="No APRS messages found")
 
-    mcp.add_tool(aprs_messages_tool, name="aprs_messages")
+    mcp.add_tool(
+        aprs_messages_tool,
+        name="aprs_messages",
+        title="APRS Messages",
+        description=(
+            "Fetch APRS text messages to or from a callsign. TODO: include "
+            "retention limits and example outputs."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True),
+    )
 
     # -----------------------------------------------------------------------
     # Band Plan Routes
     # -----------------------------------------------------------------------
-    async def band_at_frequency_tool(frequency: str) -> dict:
+    async def band_at_frequency_tool(
+        frequency: str, ctx: Context | None = None
+    ) -> BandAtFrequencyOutput:
         """Get band information for a specific frequency.
 
-        Raises ``ValueError`` if the frequency format is invalid.
+        TODO: specify accepted units and provide example usage.
         """
         adapter = get_bandplan_adapter()
         freq_hz = adapter.parse_frequency(frequency)
         if freq_hz is None:
             raise ValueError(f"Invalid frequency format: {frequency}")
         info = adapter.get_frequency_info(freq_hz)
-        return {"record": info.model_dump()}
+        return BandAtFrequencyOutput(record=info)
 
     @app.get(
         "/api/bands/frequency/{frequency}",
@@ -215,11 +356,20 @@ def create_app() -> FastAPI:
     )
     async def rest_band_at_frequency(frequency: str) -> JSONResponse:
         try:
-            return JSONResponse(await band_at_frequency_tool(frequency))
+            return JSONResponse((await band_at_frequency_tool(frequency)).model_dump())
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    mcp.add_tool(band_at_frequency_tool, name="band_at_frequency")
+    mcp.add_tool(
+        band_at_frequency_tool,
+        name="band_at_frequency",
+        title="Band at Frequency",
+        description=(
+            "Provide band information for a specific frequency. TODO: include "
+            "units and example requests."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
+    )
 
     async def search_bands_tool(
         mode: Optional[str] = None,
@@ -228,8 +378,12 @@ def create_app() -> FastAPI:
         typical_use: Optional[str] = None,
         min_frequency: Optional[str] = None,
         max_frequency: Optional[str] = None,
-    ) -> dict:
-        """Search for band segments matching specified criteria."""
+        ctx: Context | None = None,
+    ) -> SearchBandsOutput:
+        """Search for band segments matching specified criteria.
+
+        TODO: document allowable filters, units, and sample queries.
+        """
         adapter = get_bandplan_adapter()
         min_freq_hz = None
         max_freq_hz = None
@@ -249,7 +403,7 @@ def create_app() -> FastAPI:
             min_freq=min_freq_hz,
             max_freq=max_freq_hz,
         )
-        return {"record": result.model_dump()}
+        return SearchBandsOutput(record=result)
 
     @app.get(
         "/api/bands/search",
@@ -266,22 +420,40 @@ def create_app() -> FastAPI:
     ) -> JSONResponse:
         try:
             return JSONResponse(
-                await search_bands_tool(
-                    mode=mode,
-                    band_name=band_name,
-                    license_class=license_class,
-                    typical_use=typical_use,
-                    min_frequency=min_frequency,
-                    max_frequency=max_frequency,
-                )
+                (
+                    await search_bands_tool(
+                        mode=mode,
+                        band_name=band_name,
+                        license_class=license_class,
+                        typical_use=typical_use,
+                        min_frequency=min_frequency,
+                        max_frequency=max_frequency,
+                    )
+                ).model_dump()
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    mcp.add_tool(search_bands_tool, name="search_bands")
+    mcp.add_tool(
+        search_bands_tool,
+        name="search_bands",
+        title="Search Bands",
+        description=(
+            "Search band segments matching provided filters. TODO: detail "
+            "available criteria and example requests."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
+    )
 
-    async def bands_in_range_tool(start_frequency: str, end_frequency: str) -> dict:
-        """Get all band segments within a frequency range."""
+    async def bands_in_range_tool(
+        start_frequency: str,
+        end_frequency: str,
+        ctx: Context | None = None,
+    ) -> BandsInRangeOutput:
+        """Get all band segments within a frequency range.
+
+        TODO: specify units and provide example requests.
+        """
         adapter = get_bandplan_adapter()
         start_hz = adapter.parse_frequency(start_frequency)
         if start_hz is None:
@@ -292,16 +464,16 @@ def create_app() -> FastAPI:
         if start_hz > end_hz:
             raise ValueError("Start frequency must be less than end frequency")
         bands = adapter.get_bands_in_range(start_hz, end_hz)
-        return {
-            "range": {
-                "start": start_hz,
-                "end": end_hz,
-                "startMHz": start_hz / 1_000_000,
-                "endMHz": end_hz / 1_000_000,
-            },
-            "count": len(bands),
-            "bands": [band.model_dump() for band in bands],
-        }
+        return BandsInRangeOutput(
+            range=FrequencyRange(
+                start=start_hz,
+                end=end_hz,
+                startMHz=start_hz / 1_000_000,
+                endMHz=end_hz / 1_000_000,
+            ),
+            count=len(bands),
+            bands=bands,
+        )
 
     @app.get(
         "/api/bands/range/{start_frequency}/{end_frequency}",
@@ -313,19 +485,37 @@ def create_app() -> FastAPI:
         end_frequency: str,
     ) -> JSONResponse:
         try:
-            return JSONResponse(await bands_in_range_tool(start_frequency, end_frequency))
+            return JSONResponse(
+                (
+                    await bands_in_range_tool(start_frequency, end_frequency)
+                ).model_dump()
+            )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    mcp.add_tool(bands_in_range_tool, name="bands_in_range")
+    mcp.add_tool(
+        bands_in_range_tool,
+        name="bands_in_range",
+        title="Bands in Range",
+        description=(
+            "List band segments within a frequency span. TODO: clarify units "
+            "and provide sample outputs."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
+    )
 
-    async def band_plan_summary_tool() -> dict:
-        """Get summary information about the loaded band plan."""
+    async def band_plan_summary_tool(
+        ctx: Context | None = None,
+    ) -> BandPlanSummaryOutput:
+        """Get summary information about the loaded band plan.
+
+        TODO: include data source, version, and refresh cadence.
+        """
         adapter = get_bandplan_adapter()
         summary = adapter.get_summary()
         if not summary:
             raise ValueError("Band plan data not loaded. Run scripts/gen_bandplan.py")
-        return {"record": summary.model_dump()}
+        return BandPlanSummaryOutput(record=summary)
 
     @app.get(
         "/api/bands/summary",
@@ -334,11 +524,20 @@ def create_app() -> FastAPI:
     )
     async def rest_band_plan_summary() -> JSONResponse:
         try:
-            return JSONResponse(await band_plan_summary_tool())
+            return JSONResponse((await band_plan_summary_tool()).model_dump())
         except ValueError as e:
             raise HTTPException(status_code=503, detail=str(e))
 
-    mcp.add_tool(band_plan_summary_tool, name="band_plan_summary")
+    mcp.add_tool(
+        band_plan_summary_tool,
+        name="band_plan_summary",
+        title="Band Plan Summary",
+        description=(
+            "Summarize metadata for the loaded band plan. TODO: note data "
+            "provenance and version information."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
+    )
 
     # -----------------------------------------------------------------------
     # MCP server mount
