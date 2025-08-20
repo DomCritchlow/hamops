@@ -3,244 +3,802 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HamOps – Ham Operations Center</title>
+  <title>Hamops – Amateur Radio Operations Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="/web/logo.svg">
   <style>
-    :root {
-      --bg: #f6ede5;
-      --card: #ffffff;
-      --fg: #1b1b1f;
-      --muted: #5f5f62;
-      --accent: #5b4636;
-    }
-    * { box-sizing: border-box; }
-    body {
+    * {
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--fg);
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --border-color: #dee2e6;
+      --accent: #0066cc;
+      --accent-hover: #0052a3;
+      --success: #28a745;
+      --error: #dc3545;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --radius: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1a1d23;
+        --bg-secondary: #25282f;
+        --text-primary: #e9ecef;
+        --text-secondary: #adb5bd;
+        --border-color: #343a40;
+        --accent: #4dabf7;
+        --accent-hover: #339af0;
+      }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
     }
+
+    /* Header */
     header {
-      padding: 1rem 1.5rem;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.95);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      header {
+        background: rgba(26,29,35,0.95);
+      }
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .logo img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--accent);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      flex: 1;
+    }
+
+    /* Page Title */
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    /* Service Sections */
+    .service-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .section-header {
+      padding: 1rem 1.5rem;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-icon {
+      font-size: 1.25rem;
+    }
+
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      color: var(--text-secondary);
+    }
+
+    /* Service Items */
+    .service-item {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-primary);
+      transition: background-color 0.2s;
+    }
+
+    .service-item:last-child {
+      border-bottom: none;
+    }
+
+    .service-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .service-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.5rem;
+    }
+
+    .service-info {
+      flex: 1;
+    }
+
+    .service-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .service-description {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .service-endpoint {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-secondary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 0.75rem;
+    }
+
+    /* Controls */
+    .service-controls {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
       gap: 0.5rem;
     }
-    header img { width: 32px; height: 32px; }
-    header h1 { margin: 0; font-size: 1.25rem; }
-    main { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
-    .feature { padding: 1.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
-    .feature:last-child { border-bottom: none; }
-    .feature h3 { margin: 0 0 0.25rem; }
-    .feature p { margin: 0.25rem 0 0; color: var(--muted); }
-    .controls { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
-    .controls-row { display: flex; gap: 0.5rem; width: 100%; }
-    input { flex: 1; padding: 0.5rem; font-size: 1rem; min-width: 0; }
-    select { padding: 0.5rem; font-size: 1rem; min-width: 120px; }
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 4px;
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text-primary);
+      transition: all 0.2s;
+      min-width: 0;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+
+    .input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    select.input {
       cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236c757d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2.5rem;
     }
-    .result { margin-top: 1rem; }
-    pre { background: #f0f0f0; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+
+    .btn {
+      padding: 0.5rem 1.25rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .btn:hover {
+      background: var(--bg-secondary);
+      border-color: var(--text-secondary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    /* Results */
+    .result {
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .result.active {
+      display: block;
+    }
+
+    .result-content {
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .result-content pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+
     .spinner {
-      width: 24px; height: 24px;
-      border: 3px solid var(--accent);
-      border-top-color: transparent;
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
+      animation: spin 0.8s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    footer { font-size: 0.875rem; color: var(--muted); text-align: center; padding: 2rem 0; }
-    .info { font-size: 0.875rem; color: var(--muted); margin-top: 0.5rem; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error {
+      color: var(--error);
+      padding: 1rem;
+      background: rgba(220,53,69,0.1);
+      border: 1px solid rgba(220,53,69,0.2);
+      border-radius: 6px;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .container {
+        padding: 1.5rem 1rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+
+      .service-controls {
+        flex-direction: column;
+      }
+
+      .input-group {
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      select.input {
+        width: 100%;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+
+    /* Utility Classes */
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header>
-    <img src="/web/logo.svg" alt="HamOps logo" />
-    <h1>HamOps</h1>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <img src="/web/logo.svg" alt="Hamops" />
+        <h1>Hamops</h1>
+      </a>
+      <nav class="nav-links">
+        <a href="/docs" class="nav-link">API Docs</a>
+        <a href="/mcp" class="nav-link">MCP</a>
+        <a href="/health" class="nav-link">Status</a>
+        <a href="https://github.com/domcritchlow/hamops" class="nav-link">GitHub</a>
+      </nav>
+    </div>
   </header>
-  <main id="app"></main>
-  <footer>&copy; 2025 HamOps</footer>
-  <script>
-    // Feature definitions for easy extension
-    const features = [
-      {
-        id: 'callsign',
-        title: 'Callsign Lookup',
-        description: 'Look up FCC registration data via <a href="https://hamdb.org" target="_blank">hamdb.org</a>.',
-        placeholder: 'KK4ZMR',
-        endpoint: v => `/api/callsign/${v}`,
-      },
-      {
-        id: 'aprs-location',
-        title: 'APRS Locations',
-        description: 'Retrieve latest location reports from <a href="https://aprs.fi" target="_blank">aprs.fi</a>.',
-        placeholder: 'KD4PMP',
-        endpoint: v => `/api/aprs/locations/${v}`,
-      },
-      {
-        id: 'aprs-weather',
-        title: 'APRS Weather',
-        description: 'Fetch current weather data from <a href="https://aprs.fi" target="_blank">aprs.fi</a>.',
-        placeholder: 'KD4PMP',
-        endpoint: v => `/api/aprs/weather/${v}`,
-      },
-      {
-        id: 'band-frequency',
-        title: 'Band at Frequency',
-        description: 'Find what band, modes, and privileges are available at a specific frequency.',
-        placeholder: '14.225 MHz',
-        endpoint: v => `/api/bands/frequency/${encodeURIComponent(v)}`,
-        info: 'Enter frequency with units (e.g., "14.225 MHz", "146.52 MHz", "146520 kHz")'
-      },
-      {
-        id: 'band-search',
-        title: 'Search Bands',
-        description: 'Search for band segments by mode, license class, or use.',
-        type: 'search',
-        endpoint: params => {
-          const query = new URLSearchParams();
-          if (params.mode) query.append('mode', params.mode);
-          if (params.band_name) query.append('band_name', params.band_name);
-          if (params.license_class) query.append('license_class', params.license_class);
-          if (params.typical_use) query.append('typical_use', params.typical_use);
-          return `/api/bands/search?${query.toString()}`;
-        }
-      },
-      {
-        id: 'band-range',
-        title: 'Bands in Range',
-        description: 'Find all band allocations within a frequency range.',
-        type: 'range',
-        endpoint: (start, end) => `/api/bands/range/${encodeURIComponent(start)}/${encodeURIComponent(end)}`,
-        info: 'Enter frequencies with units (e.g., "14 MHz" to "14.350 MHz")'
-      },
-    ];
 
-    const app = document.getElementById('app');
-    for (const f of features) {
-      const row = document.createElement('div');
-      row.className = 'feature';
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h2 class="page-title">Amateur Radio Operations Center</h2>
+      <p class="page-subtitle">Query callsigns, APRS data, and US band plans through REST APIs and MCP</p>
+    </div>
+
+    <!-- Callsign Services -->
+    <div class="service-section">
+      <div class="section-header">
+        <span class="section-icon">📻</span>
+        <h3 class="section-title">Callsign Services</h3>
+      </div>
       
-      let controlsHTML = '';
-      if (f.type === 'search') {
-        controlsHTML = `
-          <div class="controls">
-            <div class="controls-row">
-              <select id="${f.id}-mode">
-                <option value="">Any Mode</option>
-                <option value="CW">CW</option>
-                <option value="USB">USB</option>
-                <option value="LSB">LSB</option>
-                <option value="FM">FM</option>
-                <option value="AM">AM</option>
-              </select>
-              <select id="${f.id}-band">
-                <option value="">Any Band</option>
-                <option value="160m">160m</option>
-                <option value="80m">80m</option>
-                <option value="40m">40m</option>
-                <option value="20m">20m</option>
-                <option value="15m">15m</option>
-                <option value="10m">10m</option>
-                <option value="6m">6m</option>
-                <option value="2m">2m</option>
-                <option value="70cm">70cm</option>
-              </select>
-              <select id="${f.id}-license">
-                <option value="">Any License</option>
-                <option value="Technician">Technician</option>
-                <option value="General">General</option>
-                <option value="Advanced">Advanced</option>
-                <option value="Extra">Extra</option>
-              </select>
-              <button data-id="${f.id}" data-type="search">Query</button>
-            </div>
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">Callsign Lookup</div>
+            <div class="service-description">Look up FCC registration data including license class, location, and expiration</div>
+            <div class="service-endpoint">GET /api/callsign/{callsign}</div>
           </div>
-        `;
-      } else if (f.type === 'range') {
-        controlsHTML = `
-          <div class="controls">
-            <div class="controls-row">
-              <input id="${f.id}-start" placeholder="Start (e.g., 14 MHz)" />
-              <input id="${f.id}-end" placeholder="End (e.g., 14.350 MHz)" />
-              <button data-id="${f.id}" data-type="range">Query</button>
-            </div>
+        </div>
+        <div class="service-controls">
+          <input type="text" class="input" id="callsign-input" placeholder="Enter callsign (e.g., KK4ZMR)" />
+          <button class="btn" data-service="callsign">Query</button>
+        </div>
+        <div class="result" id="callsign-result"></div>
+      </div>
+    </div>
+
+    <!-- APRS Services -->
+    <div class="service-section">
+      <div class="section-header">
+        <span class="section-icon">📡</span>
+        <h3 class="section-title">APRS Services</h3>
+      </div>
+      
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">APRS Locations</div>
+            <div class="service-description">Retrieve latest position reports with speed, altitude, and path information</div>
+            <div class="service-endpoint">GET /api/aprs/locations/{callsign}</div>
           </div>
-        `;
-      } else if (f.endpoint) {
-        controlsHTML = `
-          <div class="controls">
-            <input id="${f.id}-input" placeholder="${f.placeholder || ''}" />
-            <button data-id="${f.id}">Query</button>
+        </div>
+        <div class="service-controls">
+          <input type="text" class="input" id="aprs-location-input" placeholder="Enter callsign (e.g., KD4PMP)" />
+          <button class="btn" data-service="aprs-location">Query</button>
+        </div>
+        <div class="result" id="aprs-location-result"></div>
+      </div>
+
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">APRS Weather</div>
+            <div class="service-description">Get current weather conditions from APRS weather stations</div>
+            <div class="service-endpoint">GET /api/aprs/weather/{callsign}</div>
           </div>
-        `;
+        </div>
+        <div class="service-controls">
+          <input type="text" class="input" id="aprs-weather-input" placeholder="Enter callsign (e.g., KD4PMP)" />
+          <button class="btn" data-service="aprs-weather">Query</button>
+        </div>
+        <div class="result" id="aprs-weather-result"></div>
+      </div>
+
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">APRS Messages</div>
+            <div class="service-description">Fetch APRS text messages sent to or from a callsign</div>
+            <div class="service-endpoint">GET /api/aprs/messages/{callsign}</div>
+          </div>
+        </div>
+        <div class="service-controls">
+          <input type="text" class="input" id="aprs-messages-input" placeholder="Enter callsign" />
+          <button class="btn" data-service="aprs-messages">Query</button>
+        </div>
+        <div class="result" id="aprs-messages-result"></div>
+      </div>
+    </div>
+
+    <!-- Band Plan Services -->
+    <div class="service-section">
+      <div class="section-header">
+        <span class="section-icon">📊</span>
+        <h3 class="section-title">Band Plan Services</h3>
+      </div>
+      
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">Band at Frequency</div>
+            <div class="service-description">Find band allocations, modes, and license privileges at any frequency</div>
+            <div class="service-endpoint">GET /api/bands/frequency/{frequency}</div>
+          </div>
+        </div>
+        <div class="service-controls">
+          <input type="text" class="input" id="band-frequency-input" placeholder="Enter frequency (e.g., 14.225 MHz, 146.52 MHz)" />
+          <button class="btn" data-service="band-frequency">Query</button>
+        </div>
+        <div class="result" id="band-frequency-result"></div>
+      </div>
+
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">Search Bands</div>
+            <div class="service-description">Search the US band plan by mode, band name, license class, or typical use</div>
+            <div class="service-endpoint">GET /api/bands/search</div>
+          </div>
+        </div>
+        <div class="service-controls">
+          <div class="two-column">
+            <select class="input" id="band-search-mode">
+              <option value="">Any Mode</option>
+              <option value="CW">CW</option>
+              <option value="USB">USB</option>
+              <option value="LSB">LSB</option>
+              <option value="FM">FM</option>
+              <option value="AM">AM</option>
+              <option value="DIGITAL">Digital</option>
+            </select>
+            <select class="input" id="band-search-band">
+              <option value="">Any Band</option>
+              <option value="160m">160m</option>
+              <option value="80m">80m</option>
+              <option value="40m">40m</option>
+              <option value="30m">30m</option>
+              <option value="20m">20m</option>
+              <option value="17m">17m</option>
+              <option value="15m">15m</option>
+              <option value="12m">12m</option>
+              <option value="10m">10m</option>
+              <option value="6m">6m</option>
+              <option value="2m">2m</option>
+              <option value="70cm">70cm</option>
+            </select>
+          </div>
+          <select class="input" id="band-search-license">
+            <option value="">Any License</option>
+            <option value="Technician">Technician</option>
+            <option value="General">General</option>
+            <option value="Advanced">Advanced</option>
+            <option value="Extra">Extra</option>
+          </select>
+          <button class="btn" data-service="band-search">Query</button>
+        </div>
+        <div class="result" id="band-search-result"></div>
+      </div>
+
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">Bands in Range</div>
+            <div class="service-description">Find all band allocations within a frequency range</div>
+            <div class="service-endpoint">GET /api/bands/range/{start}/{end}</div>
+          </div>
+        </div>
+        <div class="service-controls">
+          <div class="input-row">
+            <input type="text" class="input" id="band-range-start" placeholder="Start (e.g., 14 MHz)" />
+            <input type="text" class="input" id="band-range-end" placeholder="End (e.g., 14.350 MHz)" />
+          </div>
+          <button class="btn" data-service="band-range">Query</button>
+        </div>
+        <div class="result" id="band-range-result"></div>
+      </div>
+
+      <div class="service-item">
+        <div class="service-header-row">
+          <div class="service-info">
+            <div class="service-name">Band Plan Summary</div>
+            <div class="service-description">Get metadata about the loaded band plan including version and coverage</div>
+            <div class="service-endpoint">GET /api/bands/summary</div>
+          </div>
+        </div>
+        <div class="service-controls">
+          <button class="btn" data-service="band-summary">Query</button>
+        </div>
+        <div class="result" id="band-summary-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="/docs">API Documentation</a>
+        <a href="/mcp">MCP Protocol</a>
+        <a href="https://github.com/domcritchlow/hamops">Source Code</a>
+        <a href="/health">System Status</a>
+      </div>
+      <div>&copy; 2025 Hamops · Open Source Amateur Radio APIs</div>
+    </div>
+  </footer>
+
+  <script>
+    // Service configurations
+    const services = {
+      'callsign': {
+        endpoint: (input) => `/api/callsign/${input}`,
+        inputId: 'callsign-input',
+        resultId: 'callsign-result'
+      },
+      'aprs-location': {
+        endpoint: (input) => `/api/aprs/locations/${input}`,
+        inputId: 'aprs-location-input',
+        resultId: 'aprs-location-result'
+      },
+      'aprs-weather': {
+        endpoint: (input) => `/api/aprs/weather/${input}`,
+        inputId: 'aprs-weather-input',
+        resultId: 'aprs-weather-result'
+      },
+      'aprs-messages': {
+        endpoint: (input) => `/api/aprs/messages/${input}`,
+        inputId: 'aprs-messages-input',
+        resultId: 'aprs-messages-result'
+      },
+      'band-frequency': {
+        endpoint: (input) => `/api/bands/frequency/${encodeURIComponent(input)}`,
+        inputId: 'band-frequency-input',
+        resultId: 'band-frequency-result'
+      },
+      'band-search': {
+        endpoint: () => {
+          const mode = document.getElementById('band-search-mode').value;
+          const band = document.getElementById('band-search-band').value;
+          const license = document.getElementById('band-search-license').value;
+          const params = new URLSearchParams();
+          if (mode) params.append('mode', mode);
+          if (band) params.append('band_name', band);
+          if (license) params.append('license_class', license);
+          return `/api/bands/search?${params.toString()}`;
+        },
+        resultId: 'band-search-result',
+        noInput: true
+      },
+      'band-range': {
+        endpoint: () => {
+          const start = document.getElementById('band-range-start').value;
+          const end = document.getElementById('band-range-end').value;
+          if (!start || !end) {
+            throw new Error('Please enter both start and end frequencies');
+          }
+          return `/api/bands/range/${encodeURIComponent(start)}/${encodeURIComponent(end)}`;
+        },
+        resultId: 'band-range-result',
+        noInput: true
+      },
+      'band-summary': {
+        endpoint: () => `/api/bands/summary`,
+        resultId: 'band-summary-result',
+        noInput: true
       }
+    };
+
+    // Query service function
+    async function queryService(serviceId) {
+      const service = services[serviceId];
+      const resultElement = document.getElementById(service.resultId);
       
-      row.innerHTML = `
-        <h3>${f.title}</h3>
-        <p>${f.description}</p>
-        ${f.info ? `<p class="info">${f.info}</p>` : ''}
-        ${controlsHTML}
-        <div class="result" id="${f.id}-result"></div>
-      `;
-      app.appendChild(row);
+      try {
+        // Get endpoint
+        let endpoint;
+        if (service.noInput) {
+          endpoint = service.endpoint();
+        } else {
+          const input = document.getElementById(service.inputId).value.trim();
+          if (!input) {
+            showError(resultElement, 'Please enter a value');
+            return;
+          }
+          endpoint = service.endpoint(input);
+        }
+
+        // Show loading
+        showLoading(resultElement);
+
+        // Make request
+        const response = await fetch(endpoint);
+        const data = await response.json();
+
+        // Show result
+        if (response.ok) {
+          showResult(resultElement, data);
+        } else {
+          showError(resultElement, data.detail || 'An error occurred');
+        }
+      } catch (error) {
+        showError(resultElement, error.message || 'Error fetching data');
+      }
     }
 
-    app.addEventListener('click', async (e) => {
-      if (e.target.tagName === 'BUTTON' && e.target.dataset.id) {
-        const id = e.target.dataset.id;
-        const type = e.target.dataset.type;
-        const feature = features.find((f) => f.id === id);
-        const result = document.getElementById(`${id}-result`);
-        result.innerHTML = '<div class="spinner"></div>';
-        
-        try {
-          let url;
-          if (type === 'search') {
-            const params = {
-              mode: document.getElementById(`${id}-mode`).value,
-              band_name: document.getElementById(`${id}-band`).value,
-              license_class: document.getElementById(`${id}-license`).value,
-            };
-            url = feature.endpoint(params);
-          } else if (type === 'range') {
-            const start = document.getElementById(`${id}-start`).value;
-            const end = document.getElementById(`${id}-end`).value;
-            if (!start || !end) {
-              result.textContent = 'Please enter both start and end frequencies';
-              return;
+    function showLoading(element) {
+      element.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+      element.classList.add('active');
+    }
+
+    function showResult(element, data) {
+      element.innerHTML = `<div class="result-content"><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+      element.classList.add('active');
+    }
+
+    function showError(element, message) {
+      element.innerHTML = `<div class="error">Error: ${message}</div>`;
+      element.classList.add('active');
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Button click handlers
+      document.querySelectorAll('.btn[data-service]').forEach(button => {
+        button.addEventListener('click', () => {
+          queryService(button.dataset.service);
+        });
+      });
+
+      // Enter key support for all inputs
+      document.querySelectorAll('.input').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            // Find the closest service item and its button
+            const serviceItem = input.closest('.service-item');
+            if (serviceItem) {
+              const button = serviceItem.querySelector('.btn[data-service]');
+              if (button) {
+                button.click();
+              }
             }
-            url = feature.endpoint(start, end);
-          } else {
-            const input = document.getElementById(`${id}-input`);
-            if (!input.value) {
-              result.textContent = 'Please enter a value';
-              return;
-            }
-            url = feature.endpoint(input.value);
           }
+        });
+      });
+
+      // Auto-focus first input when clicking service item
+      document.querySelectorAll('.service-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Don't focus if clicking on input or button
+          if (e.target.matches('input, button, select')) return;
           
-          const resp = await fetch(url);
-          const data = await resp.json();
-          result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-        } catch (err) {
-          result.textContent = 'Error fetching data: ' + err.message;
-        }
-      }
+          const firstInput = item.querySelector('input, select');
+          if (firstInput) {
+            firstInput.focus();
+          }
+        });
+      });
     });
   </script>
 </body>
