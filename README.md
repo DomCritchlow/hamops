@@ -1,99 +1,53 @@
 # Hamops
 
-Hamops is a small FastAPI service with an MCP (Model Context Protocol) server. It
-is meant to grow into a library of amateur‑radio utilities exposed over HTTP.
+> Modern Amateur Radio APIs with Model Context Protocol (MCP) Integration
 
-[Hamops deployed](https://hamops-uiggriujca-uc.a.run.app/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-00a393.svg)](https://fastapi.tiangolo.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Available Services
+Hamops is a comprehensive FastAPI service providing amateur radio utilities through REST APIs and Model Context Protocol. Query callsigns, track APRS data, and explore US band plans with intelligent frequency parsing and rich metadata.
 
-### Callsign Lookup
-- **REST:** `GET /api/callsign/{callsign}`
-- **MCP:** operation id `callsign_lookup`
-- **Web UI:** visit the root URL and use the form to query a callsign
+🌐 **Live Demo**: [https://hamops-uiggriujca-uc.a.run.app/](https://hamops-uiggriujca-uc.a.run.app/)
 
-### APRS Location
-- **REST:** `GET /api/aprs/locations/{callsign}`
-- **MCP:** operation id `aprs_locations`
+---
 
-### APRS Weather
-- **REST:** `GET /api/aprs/weather/{callsign}`
-- **MCP:** operation id `aprs_weather`
+## ✨ Features
 
-### APRS Messages
-- **REST:** `GET /api/aprs/messages/{callsign}`
-- **MCP:** operation id `aprs_messages`
+- **📻 Callsign Lookup** - FCC registration data via HamDB
+- **📡 APRS Tracking** - Real-time location, weather, and messaging
+- **📊 Band Plan Database** - Complete US frequency allocations with license privileges
+- **🤖 MCP Integration** - AI-ready endpoints for natural language queries
+- **⚡ High Performance** - Built on FastAPI with async support
+- **🎨 Modern Web UI** - Clean, responsive interface for all services
 
-### Band Plan Services
+---
 
-#### Band at Frequency
-- **REST:** `GET /api/bands/frequency/{frequency}`
-- **MCP:** operation id `band_at_frequency`
-- **Description:** Find what band, modes, and license privileges are available at a specific frequency
-- **Frequency formats:** "14.225 MHz", "146520 kHz", "144000000 Hz", or "14.225" (assumes MHz)
+## 🚀 Quick Start
 
-#### Search Bands
-- **REST:** `GET /api/bands/search`
-- **MCP:** operation id `search_bands`
-- **Query parameters:**
-  - `mode`: Filter by mode (CW, USB, LSB, FM, AM, etc.)
-  - `band_name`: Filter by band name (160m, 80m, 40m, 20m, 2m, 70cm, etc.)
-  - `license_class`: Filter by license (Technician, General, Advanced, Extra)
-  - `typical_use`: Filter by use (Phone, Digital, Satellite, Emergency, etc.)
-  - `min_frequency`: Minimum frequency with units
-  - `max_frequency`: Maximum frequency with units
+### Prerequisites
 
-#### Bands in Range
-- **REST:** `GET /api/bands/range/{start_frequency}/{end_frequency}`
-- **MCP:** operation id `bands_in_range`
-- **Description:** Get all band segments within a frequency range
-
-#### Band Plan Summary
-- **REST:** `GET /api/bands/summary`
-- **MCP:** operation id `band_plan_summary`
-- **Description:** Get metadata about the loaded band plan
-
-## Web Interface
-
-The root endpoint (`/`) serves a simple single‑column interface that works on
-desktop and mobile browsers. Each tool accepts a callsign query and shows the
-JSON response inline with a loading indicator. The band plan tools allow
-searching by frequency, mode, band name, and license class.
-
-## API Usage
-
-For programmatic access, use the `/api` prefix. If the `OPENAI_API_KEY`
-environment variable is set, include an `x-api-key` header with each
-request:
-
-- `GET /api` – service metadata
-- `GET /api/callsign/{callsign}` – perform a lookup
-- `GET /api/aprs/locations/{callsign}` – APRS location history
-- `GET /api/aprs/weather/{callsign}` – latest APRS weather report
-- `GET /api/aprs/messages/{callsign}` – APRS messages to/from a callsign
-- `GET /api/bands/frequency/{freq}` – band info at a frequency
-- `GET /api/bands/search` – search band segments
-- `GET /api/bands/range/{start}/{end}` – bands in a range
-- `GET /api/bands/summary` – band plan metadata
-- `GET /health` – basic health check
-
-## Development
-
-### Requirements
-- Python 3.11+
-- [HamDB](http://api.hamdb.org) network access for callsign lookups
-- Internet access to fetch band plan data
+- Python 3.11 or higher
+- Internet access for external APIs
+- (Optional) API keys for enhanced features
 
 ### Local Development
 
 ```bash
+# Clone the repository
+git clone https://github.com/domcritchlow/hamops.git
+cd hamops
+
 # Set up virtual environment
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 
 # Configure environment
-cp .env.example .env  # fill in any needed values
+cp .env.example .env
+# Edit .env to add your API keys (optional)
 
 # Generate band plan data (first time only)
 python scripts/gen_bandplan.py
@@ -102,19 +56,89 @@ python scripts/gen_bandplan.py
 uvicorn hamops.main:app --reload
 ```
 
-Visit `http://localhost:8000` for the web UI or `http://localhost:8000/docs`
-for the interactive API documentation.
+Visit `http://localhost:8000` for the web interface or `http://localhost:8000/docs` for interactive API documentation.
 
-### Setup Script
+---
 
-For convenience, you can use the setup script to generate the band plan data:
+## 📚 API Reference
 
-```bash
-chmod +x setup.sh
-./setup.sh
-```
+### Authentication
 
-### Docker
+Optional API key authentication via `x-api-key` header. Set `OPENAI_API_KEY` environment variable to enable.
+
+### Endpoints
+
+#### Callsign Services
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/callsign/{callsign}` | GET | Look up amateur radio operator information |
+
+#### APRS Services
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/aprs/locations/{callsign}` | GET | Track position reports with speed, altitude, and path |
+| `/api/aprs/weather/{callsign}` | GET | Current weather conditions from APRS stations |
+| `/api/aprs/messages/{callsign}` | GET | Text messages sent to/from a callsign |
+
+#### Band Plan Services
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/bands/frequency/{frequency}` | GET | Find band, modes, and privileges at a frequency |
+| `/api/bands/search` | GET | Search bands by mode, license, or use |
+| `/api/bands/range/{start}/{end}` | GET | Get all bands within a frequency range |
+| `/api/bands/summary` | GET | Band plan metadata and statistics |
+
+#### System
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Web interface |
+| `/api` | GET | Service metadata |
+| `/health` | GET | Health check |
+| `/docs` | GET | Interactive API documentation |
+| `/mcp` | * | Model Context Protocol endpoint |
+
+### Frequency Formats
+
+The band plan services accept frequencies in multiple formats:
+- `14.225 MHz` or `14.225MHz`
+- `146520 kHz` or `146520kHz`
+- `144000000 Hz` or `144000000`
+- `14.225` (assumes MHz if decimal present)
+
+---
+
+## 🤖 Model Context Protocol (MCP)
+
+All endpoints are exposed through MCP at `/mcp`, enabling AI assistants to query ham radio data using natural language.
+
+### Available Operations
+
+- `callsign_lookup` - Look up amateur radio callsigns
+- `aprs_locations` - Get APRS location data
+- `aprs_weather` - Get APRS weather reports
+- `aprs_messages` - Get APRS messages
+- `band_at_frequency` - Find band info at a specific frequency
+- `search_bands` - Search for band segments by criteria
+- `bands_in_range` - Get bands within a frequency range
+- `band_plan_summary` - Get band plan metadata
+
+### Example Queries
+
+AI assistants can handle natural language queries like:
+- "What privileges do I have at 14.225 MHz with a General license?"
+- "Find CW frequencies available to Technician operators"
+- "Show me the weather at KD4PMP's station"
+- "What band is 146.52 MHz in?"
+
+---
+
+## 🐳 Docker Deployment
+
+### Build and Run
 
 ```bash
 # Build the image
@@ -123,9 +147,27 @@ docker build -t hamops .
 # Generate band plan data (run once)
 docker run --rm -v $(pwd)/hamops/data:/app/hamops/data hamops python scripts/gen_bandplan.py
 
-# Run with environment variables from .env
+# Run the container
 docker run --env-file .env -p 8080:8080 -v $(pwd)/hamops/data:/app/hamops/data hamops
 ```
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  hamops:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./hamops/data:/app/hamops/data
+```
+
+---
+
+## ☁️ Cloud Deployment
 
 ### Google Cloud Run
 
@@ -137,49 +179,131 @@ python scripts/gen_bandplan.py
 gcloud run deploy hamops \
   --source . \
   --region us-central1 \
-  --allow-unauthenticated
-```
+  --allow-unauthenticated \
+  --set-env-vars APRFI_API_KEY=your_key
 
-Retrieve the deployed URL:
-
-```bash
+# Get the deployed URL
 gcloud run services describe hamops \
   --region us-central1 \
   --format="value(status.url)"
 ```
 
-## MCP
+---
 
-The MCP server is automatically mounted at `/mcp` and exposes all the 
-operations listed above. Any MCP client that supports HTTP transport can
-interact with it at that endpoint.
+## 🔧 Configuration
 
-### MCP Operations Available:
-- `callsign_lookup` - Look up amateur radio callsigns
-- `aprs_locations` - Get APRS location data
-- `aprs_weather` - Get APRS weather reports
-- `aprs_messages` - Get APRS messages
-- `band_at_frequency` - Find band info at a specific frequency
-- `search_bands` - Search for band segments by criteria
-- `bands_in_range` - Get bands within a frequency range
-- `band_plan_summary` - Get band plan metadata
+### Environment Variables
 
-## Data Sources
+Create a `.env` file in the project root:
 
-- **Callsign data:** [HamDB.org](http://api.hamdb.org)
-- **APRS data:** [aprs.fi](https://aprs.fi) (requires API key in `.env`)
-- **Band plan data:** [SDR-Band-Plans](https://github.com/Arrin-KN1E/SDR-Band-Plans)
+```env
+# Optional: APRS.fi API key for weather and messaging
+APRFI_API_KEY=your_aprs_fi_api_key
 
-## Band Plan Features
+# Optional: Enable API key authentication
+OPENAI_API_KEY=your_api_key
+```
 
-The band plan service provides comprehensive information about US amateur radio
-frequency allocations. It can answer questions like:
+### Band Plan Data
 
-- What privileges do I have at 14.225 MHz?
-- Where can I operate CW with a General license?
-- What bands are available for satellite communication?
-- What modes are allowed in the 20m band?
-- Which frequencies can Technician licensees use for phone?
+The band plan data must be generated before first use:
 
-The frequency parser intelligently handles multiple unit formats, making it
-easy to query using whatever format is most convenient.
+```bash
+# Using the setup script
+chmod +x setup.sh
+./setup.sh
+
+# Or directly
+python scripts/gen_bandplan.py
+```
+
+This creates `hamops/data/us_bandplan.json` with over 1000 band segments.
+
+---
+
+## 📊 Data Sources
+
+| Source | Description | Used For |
+|--------|-------------|----------|
+| [HamDB.org](http://api.hamdb.org) | FCC amateur radio database | Callsign lookups |
+| [APRS.fi](https://aprs.fi) | Global APRS network | Location, weather, messages |
+| [SDR-Band-Plans](https://github.com/Arrin-KN1E/SDR-Band-Plans) | Frequency allocations | US band plan data |
+
+---
+
+## 🏗️ Project Structure
+
+```
+hamops/
+├── hamops/
+│   ├── main.py              # FastAPI application
+│   ├── adapters/            # External API integrations
+│   │   ├── aprs.py         # APRS.fi adapter
+│   │   ├── bandplan.py     # Band plan query engine
+│   │   └── callsign.py     # HamDB adapter
+│   ├── models/              # Pydantic data models
+│   ├── middleware/          # Logging and request handling
+│   ├── web/                # Web interface assets
+│   └── data/               # Generated band plan data
+├── scripts/
+│   └── gen_bandplan.py     # Band plan generator
+├── requirements.txt         # Python dependencies
+├── Dockerfile              # Container configuration
+├── cloudbuild.yaml         # GCP deployment config
+└── setup.sh                # Setup automation script
+```
+
+---
+
+## 🧪 Development
+
+### Running Tests
+
+```bash
+# Install dev dependencies
+pip install pytest pytest-asyncio httpx
+
+# Run tests
+pytest tests/
+```
+
+### API Testing
+
+Use the interactive documentation at `/docs` for testing endpoints with the Swagger UI.
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [HamDB.org](http://hamdb.org) for callsign data
+- [APRS.fi](https://aprs.fi) for APRS network access
+- [Arrin-KN1E](https://github.com/Arrin-KN1E) for SDR band plan data
+- The amateur radio community for ongoing support
+
+---
+
+## 📧 Contact
+
+- **GitHub**: [https://github.com/domcritchlow/hamops](https://github.com/domcritchlow/hamops)
+- **Issues**: [https://github.com/domcritchlow/hamops/issues](https://github.com/domcritchlow/hamops/issues)
+
+---
+
+<div align="center">
+  <b>73 de Hamops</b><br>
+  <i>Built with ❤️ for the amateur radio community</i>
+</div>
