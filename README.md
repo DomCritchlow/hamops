@@ -304,6 +304,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  <b>73 de Hamops</b><br>
-  <i>Built with ❤️ for the amateur radio community</i>
+  <b>73</b><br>
 </div>
