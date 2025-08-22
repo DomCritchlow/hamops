@@ -1,0 +1,92 @@
+{
+  "seasonal": {
+    "summer": {
+      "80m": {
+        "day": "Mostly NVIS (~100-300 km) due to strong D-layer absorption",
+        "night": "Good up to 1500+ km, but reduced from winter"
+      },
+      "40m": {
+        "day": "Limited range (~500 km) due to D-layer absorption",
+        "night": "Good for intercontinental DX"
+      },
+      "20m": {
+        "day": "Excellent worldwide propagation if solar flux adequate",
+        "night": "Limited, depends on solar activity"
+      },
+      "10m": {
+        "day": "Open during solar maximum, sporadic-E in summer",
+        "night": "Usually closed except during high solar activity"
+      }
+    },
+    "winter": {
+      "80m": {
+        "day": "Better than summer, 500-1000 km possible",
+        "night": "Excellent DX, can work worldwide"
+      },
+      "40m": {
+        "day": "Good regional coverage",
+        "night": "Excellent worldwide DX"
+      },
+      "20m": {
+        "day": "Excellent with slightly higher MUF than summer",
+        "night": "Good during solar maximum periods"
+      },
+      "10m": {
+        "day": "Open during solar maximum",
+        "night": "Rarely open, needs high solar activity"
+      }
+    }
+  },
+  "solar_cycle": {
+    "minimum": {
+      "description": "Solar flux 65-75, few sunspots",
+      "propagation": "Poor upper HF (15m/10m), rely on 20m and below"
+    },
+    "rising": {
+      "description": "Solar flux 75-120, increasing sunspots",
+      "propagation": "Improving conditions, 15m opening regularly"
+    },
+    "maximum": {
+      "description": "Solar flux 120-200+, many sunspots",
+      "propagation": "Excellent HF propagation, 10m open daily for DX"
+    },
+    "declining": {
+      "description": "Solar flux 80-120, decreasing sunspots",
+      "propagation": "Good but declining, enjoy while it lasts"
+    }
+  },
+  "geomagnetic": {
+    "quiet": {
+      "k_range": [
+        0,
+        3
+      ],
+      "description": "Stable ionosphere, excellent propagation",
+      "effects": "Higher MUF, lower noise, better DX"
+    },
+    "unsettled": {
+      "k_range": [
+        4,
+        4
+      ],
+      "description": "Minor disturbances possible",
+      "effects": "Slightly degraded conditions, some fading"
+    },
+    "active": {
+      "k_range": [
+        5,
+        5
+      ],
+      "description": "Storm conditions beginning",
+      "effects": "Degraded HF, auroral propagation possible"
+    },
+    "storm": {
+      "k_range": [
+        6,
+        9
+      ],
+      "description": "Geomagnetic storm in progress",
+      "effects": "HF blackout likely, enhanced VHF auroral"
+    }
+  }
+}

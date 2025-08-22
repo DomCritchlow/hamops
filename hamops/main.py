@@ -10,6 +10,7 @@ so that ASGI servers like Uvicorn can discover it automatically.
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from importlib import resources
 from typing import Optional
 
@@ -28,6 +29,7 @@ from .adapters.aprs import (
     get_aprs_messages,
 )
 from .adapters.bandplan import get_bandplan_adapter
+from .adapters.propagation import get_propagation_adapter
 from .middleware import RequestLogMiddleware
 
 
@@ -42,9 +44,9 @@ def create_app() -> FastAPI:
 
     The returned application includes CORS middleware, request logging,
     optional API key authentication, and a set of REST endpoints for
-    callsign lookups and APRS queries.  The MCP server is automatically
-    mounted with the operation identifiers defined on the route
-    decorators.
+    callsign lookups, APRS queries, band plan, and propagation services.
+    The MCP server is automatically mounted with the operation identifiers
+    defined on the route decorators.
     """
     app = FastAPI(title="Hamops")
 
@@ -324,6 +326,279 @@ def create_app() -> FastAPI:
         return JSONResponse({"record": summary.model_dump()})
 
     # -----------------------------------------------------------------------
+    # Propagation Routes
+    # -----------------------------------------------------------------------
+    @app.get(
+        "/api/propagation/conditions",
+        operation_id="propagation_conditions",
+        tags=["Propagation"],
+    )
+    async def rest_propagation_conditions(
+        location: Optional[str] = Query(None, description="Location for MUF data (optional)")
+    ) -> JSONResponse:
+        """Get current solar-terrestrial conditions and band propagation status.
+
+        Returns the latest solar flux, sunspot number, K-index, A-index,
+        solar wind speed, geomagnetic field status, and qualitative band
+        conditions (Good/Fair/Poor) for different bands during day/night.
+
+        If a location is provided, also includes MUF (Maximum Usable Frequency)
+        data for that location.
+        """
+        adapter = get_propagation_adapter()
+        conditions = await adapter.fetch_current_conditions(location)
+        
+        if not conditions:
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to fetch current propagation conditions"
+            )
+        
+        return JSONResponse({"record": conditions.model_dump()})
+
+    @app.get(
+        "/api/propagation/forecast",
+        operation_id="propagation_forecast",
+        tags=["Propagation"],
+    )
+    async def rest_propagation_forecast(
+        days: int = Query(27, ge=1, le=27, description="Number of days to forecast (1-27)"),
+        date: Optional[str] = Query(None, description="Specific date to get forecast for (ISO format)")
+    ) -> JSONResponse:
+        """Get short-term propagation forecast from NOAA.
+
+        Returns predicted solar flux, A-index, and K-index for the next N days
+        (up to 27 days). Each day includes a qualitative assessment of expected
+        propagation conditions.
+
+        If a specific date is provided, returns only the forecast for that date.
+        """
+        adapter = get_propagation_adapter()
+        forecasts = await adapter.fetch_forecast(days)
+        
+        if not forecasts:
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to fetch propagation forecast"
+            )
+        
+        # Filter by specific date if requested
+        if date:
+            date_forecast = [f for f in forecasts if f.date == date]
+            if not date_forecast:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"No forecast available for date: {date}"
+                )
+            return JSONResponse({"record": date_forecast[0].model_dump()})
+        
+        return JSONResponse({
+            "count": len(forecasts),
+            "forecasts": [f.model_dump() for f in forecasts]
+        })
+
+    @app.get(
+        "/api/propagation/analysis",
+        operation_id="propagation_analysis",
+        tags=["Propagation"],
+    )
+    async def rest_propagation_analysis(
+        season: Optional[str] = Query(None, description="Season: 'summer' or 'winter'"),
+        band: Optional[str] = Query(None, description="Amateur band (e.g., '20m', '40m', '80m')"),
+        solar_cycle: Optional[str] = Query(None, description="Solar cycle phase: 'minimum', 'rising', 'maximum', 'declining'"),
+        year: Optional[int] = Query(None, ge=2000, le=2050, description="Specific year for analysis"),
+    ) -> JSONResponse:
+        """Analyze propagation characteristics for specific conditions.
+
+        Provides detailed propagation analysis based on season, band, solar cycle
+        phase, and/or year. Returns expected daytime and nighttime propagation
+        characteristics, maximum distances, and operating recommendations.
+
+        All parameters are optional. The more specific the query, the more
+        detailed the analysis.
+        """
+        adapter = get_propagation_adapter()
+        
+        # Validate inputs
+        if season and season not in ["summer", "winter"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Season must be 'summer' or 'winter'"
+            )
+        
+        if solar_cycle and solar_cycle not in ["minimum", "rising", "maximum", "declining"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Solar cycle must be one of: minimum, rising, maximum, declining"
+            )
+        
+        analysis = adapter.analyze_propagation(
+            season=season,
+            band=band,
+            solar_cycle=solar_cycle,
+            year=year,
+        )
+        
+        return JSONResponse({"record": analysis.model_dump()})
+
+    @app.get(
+        "/api/propagation/muf",
+        operation_id="propagation_muf",
+        tags=["Propagation"],
+    )
+    async def rest_propagation_muf(
+        location: str = Query(..., description="Location or station code for MUF data"),
+        lat: Optional[float] = Query(None, ge=-90, le=90, description="Latitude"),
+        lon: Optional[float] = Query(None, ge=-180, le=180, description="Longitude"),
+    ) -> JSONResponse:
+        """Get Maximum Usable Frequency (MUF) data for a location.
+
+        Returns the current MUF for 3000km path and critical frequency (foF2)
+        for the specified location. Data is obtained from the nearest ionosonde
+        station.
+
+        Provide either a location string or lat/lon coordinates.
+        """
+        adapter = get_propagation_adapter()
+        
+        # Format location string if coordinates provided
+        if lat is not None and lon is not None:
+            location = f"{lat},{lon}"
+        
+        muf_data = await adapter.fetch_muf(location)
+        
+        if not muf_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No MUF data available for location: {location}"
+            )
+        
+        return JSONResponse({"record": muf_data.model_dump()})
+
+    @app.get(
+        "/api/propagation/solar-cycle/{year}",
+        operation_id="solar_cycle_data",
+        tags=["Propagation"],
+    )
+    async def rest_solar_cycle_data(
+        year: int
+    ) -> JSONResponse:
+        """Get solar cycle information for a specific year.
+
+        Returns predicted or observed solar flux and sunspot numbers for the
+        specified year, along with the solar cycle phase and expected propagation
+        characteristics.
+        
+        Args:
+            year: Year to analyze (2000-2050)
+        """
+        # Validate year range
+        if year < 2000 or year > 2050:
+            raise HTTPException(
+                status_code=400,
+                detail="Year must be between 2000 and 2050"
+            )
+        
+        adapter = get_propagation_adapter()
+        cycle_data = await adapter.get_solar_cycle_data(year)
+        
+        return JSONResponse({"record": cycle_data.model_dump()})
+
+    @app.get(
+        "/api/propagation/aurora",
+        operation_id="aurora_conditions",
+        tags=["Propagation"],
+    )
+    async def rest_aurora_conditions() -> JSONResponse:
+        """Get current aurora visibility predictions.
+
+        Returns OVATION aurora model data showing where auroras may be visible,
+        including view line latitude and best viewing locations.
+        """
+        adapter = get_propagation_adapter()
+        aurora_data = await adapter.fetch_aurora_data()
+        
+        if not aurora_data:
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to fetch aurora data"
+            )
+        
+        return JSONResponse({"record": aurora_data.model_dump()})
+
+    @app.get(
+        "/api/propagation/solar-regions",
+        operation_id="solar_regions",
+        tags=["Propagation"],
+    )
+    async def rest_solar_regions() -> JSONResponse:
+        """Get active solar regions and sunspot groups.
+
+        Returns information about numbered active regions on the Sun,
+        including their location, size, magnetic configuration, and
+        flare probabilities.
+        """
+        adapter = get_propagation_adapter()
+        regions = await adapter.fetch_solar_regions()
+        
+        return JSONResponse({
+            "count": len(regions),
+            "regions": [r.model_dump() for r in regions]
+        })
+
+    @app.get(
+        "/api/propagation/solar-events",
+        operation_id="solar_events",
+        tags=["Propagation"],
+    )
+    async def rest_solar_events(
+        days: int = Query(3, ge=1, le=30, description="Number of days of events to retrieve")
+    ) -> JSONResponse:
+        """Get recent solar events (flares, CMEs, etc.).
+
+        Returns a list of recent solar events including flares, coronal mass
+        ejections (CMEs), and proton events. Events are sorted by time with
+        the most recent first.
+        """
+        adapter = get_propagation_adapter()
+        events = await adapter.fetch_solar_events(days)
+        
+        return JSONResponse({
+            "count": len(events),
+            "events": [e.model_dump() for e in events]
+        })
+
+    @app.get(
+        "/api/propagation/space-weather",
+        operation_id="space_weather_summary",
+        tags=["Propagation"],
+    )
+    async def rest_space_weather_summary() -> JSONResponse:
+        """Get comprehensive space weather summary.
+
+        Combines data from multiple sources to provide a complete picture of
+        current space weather conditions, including:
+        - Solar activity level
+        - Geomagnetic storm status (G-scale)
+        - Radio blackout status (R-scale)
+        - Solar radiation storm status (S-scale)
+        - Particle flux measurements
+        - Active region count
+        - Recent flare activity
+        - Aurora visibility
+        """
+        adapter = get_propagation_adapter()
+        summary = await adapter.fetch_space_weather_summary()
+        
+        if not summary:
+            raise HTTPException(
+                status_code=503,
+                detail="Unable to fetch space weather data"
+            )
+        
+        return JSONResponse({"record": summary.model_dump()})
+
+    # -----------------------------------------------------------------------
     # MCP server mount
     # -----------------------------------------------------------------------
     # Include all operation identifiers so they are exposed over the MCP server
@@ -338,6 +613,15 @@ def create_app() -> FastAPI:
             "search_bands",
             "bands_in_range",
             "band_plan_summary",
+            "propagation_conditions",
+            "propagation_forecast",
+            "propagation_analysis",
+            "propagation_muf",
+            "solar_cycle_data",
+            "aurora_conditions",
+            "solar_regions",
+            "solar_events",
+            "space_weather_summary",
         ],
     )
     mcp.mount()

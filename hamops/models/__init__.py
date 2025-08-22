@@ -3,6 +3,17 @@
 from .aprs import APRSLocationRecord, APRSMessageRecord, APRSWeatherRecord
 from .bandplan import BandSegment, FrequencyInfo, BandSearchResult, BandPlanSummary
 from .callsign import CallsignRecord
+from .propagation import (
+    CurrentConditions,
+    PropagationForecast,
+    PropagationAnalysis,
+    MUFData,
+    SolarCycleData,
+    AuroraData,
+    SolarRegion,
+    SolarEvent,
+    SpaceWeatherSummary,
+)
 
 __all__ = [
     "CallsignRecord",
@@ -13,4 +24,13 @@ __all__ = [
     "FrequencyInfo",
     "BandSearchResult",
     "BandPlanSummary",
+    "CurrentConditions",
+    "PropagationForecast",
+    "PropagationAnalysis",
+    "MUFData",
+    "SolarCycleData",
+    "AuroraData",
+    "SolarRegion",
+    "SolarEvent",
+    "SpaceWeatherSummary",
 ]
