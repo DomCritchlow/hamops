@@ -10,6 +10,8 @@ Hamops is a comprehensive FastAPI service providing amateur radio utilities thro
 
 🌐 **Live Demo**: [https://hamops-uiggriujca-uc.a.run.app/](https://hamops-uiggriujca-uc.a.run.app/)
 
+📘 **MCP Query Example**: [Cross-Country APRS Expedition](hamops/web/examples/Query_Example.md) – generated in Claude Desktop using this API with no additional context.
+
 ---
 
 ## ✨ Features

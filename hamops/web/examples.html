@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hamops – Examples</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/web/logo.svg">
+  <link rel="stylesheet" href="/web/styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <img src="/web/logo.svg" alt="Hamops" />
+        <h1>Hamops</h1>
+      </a>
+      <nav class="nav-links">
+        <a href="/docs" class="nav-link">API Docs</a>
+        <a href="/mcp" class="nav-link">MCP</a>
+        <a href="/web/examples.html" class="nav-link">Examples</a>
+        <a href="/health" class="nav-link">Status</a>
+        <a href="https://github.com/domcritchlow/hamops" class="nav-link">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h2 class="page-title">Usage Examples</h2>
+      <p class="page-subtitle">Sample outputs demonstrating API and MCP integration.</p>
+    </div>
+
+    <details class="example" open>
+      <summary>MCP Query: Cross-Country APRS Expedition</summary>
+      <div class="markdown-content" data-source="/web/examples/Query_Example.md"></div>
+    </details>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    document.querySelectorAll('.markdown-content').forEach(el => {
+      fetch(el.dataset.source)
+        .then(response => response.text())
+        .then(text => {
+          el.innerHTML = marked.parse(text);
+        });
+    });
+  </script>
+</body>
+</html>
