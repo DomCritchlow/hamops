@@ -342,19 +342,20 @@
     }
 
     /* Examples */
-    .examples-wrapper {
-      max-width: 800px;
-      margin: 0 auto;
-    }
+      .examples-wrapper {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
 
-    .example {
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      background: var(--bg-secondary);
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 1.5rem;
-      overflow: hidden;
-    }
+      .example {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        background: var(--bg-secondary);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+        width: 100%;
+      }
 
     .example summary {
       padding: 1rem 1.25rem;
@@ -385,20 +386,25 @@
       border-bottom: 1px solid var(--border-color);
     }
 
-    .example .markdown-content {
-      padding: 1rem 1.25rem;
-    }
+      .example .markdown-content {
+        padding: 1rem 1.25rem;
+      }
 
-    .markdown-content h1,
+      .markdown-content h1,
     .markdown-content h2,
     .markdown-content h3 {
       margin: 1.25rem 0 0.75rem;
       font-weight: 600;
     }
 
-    .markdown-content p {
-      margin-bottom: 1rem;
-    }
+      .markdown-content p {
+        margin-bottom: 1rem;
+      }
+
+      .markdown-content ol,
+      .markdown-content ul {
+        padding-left: 1.5rem;
+      }
 
     .markdown-content pre {
       background: var(--bg-primary);
